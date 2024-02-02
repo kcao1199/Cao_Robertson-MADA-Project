@@ -1,0 +1,233 @@
+---
+title: "Robertson and Cao Project"
+subtitle: "Teenage HPV Vaccination Coverage and Socioeconomic Factors"
+author: Kelly Cao and Rachel Robertson
+date: "`r Sys.Date()`"
+format:
+  docx:
+    toc: false
+    number-sections: true
+    highlight-style: github
+bibliography: ../assets/dataanalysis-references.bib
+csl: ../assets/apa.csl
+---
+
+The structure below is one possible setup for a data analysis project (including the course project). For a manuscript, adjust as needed. 
+You don't need to have exactly these sections, but the content covering those sections should be addressed.
+
+This uses MS Word as output format. [See here](https://quarto.org/docs/output-formats/ms-word.html) for more information. You can switch to other formats, like html or pdf. See [the Quarto documentation](https://quarto.org/) for other formats.
+
+
+```{r, echo=FALSE, message=FALSE}
+# load a few R packages
+library(here)
+library(knitr)
+```
+
+
+
+# Summary/Abstract
+_Write a summary of your project._
+
+
+{{< pagebreak >}}
+
+
+# Introduction 
+
+## General Background Information
+_Provide enough background on your topic that others can understand the why and how of your analysis_ 
+
+## Description of data and data source
+_Describe what the data is, what it contains, where it is from, etc. Eventually this might be part of a methods section._
+
+## Questions/Hypotheses to be addressed
+_State the research questions you plan to answer with this analysis._
+
+To cite other work (important everywhere, but likely happens first in introduction), make sure your references are in the bibtex file specified in the YAML header above (here `dataanalysis_template_references.bib`) and have the right bibtex key. Then you can include like this:
+
+Examples of reproducible research projects can for instance be found in [@mckay2020; @mckay2020a].
+
+
+
+{{< pagebreak >}}
+
+
+# Methods 
+
+_Describe your methods. That should describe the data, the cleaning processes, and the analysis approaches. You might want to provide a shorter description here and all the details in the supplement._
+
+
+## Schematic of workflow
+
+Sometimes you might want to show a schematic diagram/figure that was not created with code (if you can do it with code, do it). @fig-schematic is an example of some - completely random/unrelated - schematic that was generated with Biorender.
+We store those figures in the `assets` folder.
+
+```{r}
+#| label: fig-schematic
+#| fig-cap: "A figure that is manually generated and shows some overview/schematic. This has nothing to do with the data, it's just a random one from one of our projects I found and placed here."
+#| echo: FALSE
+knitr::include_graphics(here("products","assets","antigen-recognition.png"))
+```
+
+
+
+
+## Data aquisition
+_As applicable, explain where and how you got the data. If you directly import the data from an online source, you can combine this section with the next._
+
+
+## Data import and cleaning
+_Write code that reads in the file and cleans it so it's ready for analysis. Since this will be fairly long code for most datasets, it might be a good idea to have it in one or several R scripts. If that is the case, explain here briefly what kind of cleaning/processing you do, and provide more details and well documented code somewhere (e.g. as supplement in a paper). All materials, including files that contain code, should be commented well so everyone can follow along._
+
+
+## Statistical analysis
+_Explain anything related to your statistical analyses._
+
+
+{{< pagebreak >}}
+
+
+# Results
+
+## Exploratory/Descriptive analysis
+
+_Use a combination of text/tables/figures to explore and describe your data. Show the most important descriptive results here. Additional ones should go in the supplement. Even more can be in the R and Quarto files that are part of your project._
+
+
+@tbl-summarytable shows a summary of the data.
+
+Note the loading of the data providing a **relative** path using the `../../` notation. (Two dots means a folder up). You never want to specify an **absolute** path like `C:\ahandel\myproject\results\` because if you share this with someone, it won't work for them since they don't have that path. You can also use the `here` R package to create paths. See examples of that below.
+
+```{r}
+#| label: tbl-summarytable
+#| tbl-cap: "Data summary table."
+#| echo: FALSE
+resulttable=readRDS("../../results/summarytable.rds")
+knitr::kable(resulttable)
+```
+
+
+
+## Basic statistical analysis
+
+_To get some further insight into your data, if reasonable you could compute simple statistics (e.g. simple models with 1 predictor) to look for associations between your outcome(s) and each individual predictor variable. Though note that unless you pre-specified the outcome and main exposure, any "p<0.05 means statistical significance" interpretation is not valid._
+
+
+@fig-result shows a scatterplot figure produced by one of the R scripts.
+
+```{r}
+#| label: fig-result
+#| fig-cap: "Height and weight stratified by gender."
+#| echo: FALSE
+knitr::include_graphics(here("results","height-weight-stratified.png"))
+```
+
+
+## Full analysis
+
+_Use one or several suitable statistical/machine learning methods to analyze your data and to produce meaningful figures, tables, etc. This might again be code that is best placed in one or several separate R scripts that need to be well documented. You want the code to produce figures and data ready for display as tables, and save those. Then you load them here._
+
+Example @tbl-resulttable2 shows a summary of a linear model fit.
+
+```{r}
+#| label: tbl-resulttable2
+#| tbl-cap: "Linear model fit table."
+#| echo: FALSE
+resulttable2 = readRDS(here("results","tables-files","resulttable2.rds"))
+knitr::kable(resulttable2)
+```
+
+
+{{< pagebreak >}}
+
+
+# Discussion
+
+## Summary and Interpretation
+_Summarize what you did, what you found and what it means._
+
+## Strengths and Limitations
+_Discuss what you perceive as strengths and limitations of your analysis._
+
+## Conclusions
+_What are the main take-home messages?_
+
+_Include citations in your Rmd file using bibtex, the list of references will automatically be placed at the end_
+
+This paper [@leek2015] discusses types of analyses. 
+
+These papers [@mckay2020; @mckay2020a] are good examples of papers published using a fully reproducible setup similar to the one shown in this template. 
+
+Note that this cited reference will show up at the end of the document, the reference formatting is determined by the CSL file specified in the YAML header. Many more style files for almost any journal [are available](https://www.zotero.org/styles). You also specify the location of your bibtex reference file in the YAML. You can call your reference file anything you like, I just used the generic word `references.bib` but giving it a more descriptive name is probably better.
+
+
+# *Part 1*
+## Data Set
+  The data we chose to use is the National Immunization Survey (NIS) of 2022. It consists survey data that was collected to monitor vaccination coverage for teenagers age 13-17 in the United States of America. The surveys were conducted by the National Center for Immunization and Respiratory Diseases of the Center (NCIRD) for Disease Control and Prevention (CDC). The survey itself consists of two parts: (1) the household telephone (random digit dialing) survey answered by a parent or guardian and (2) a mailed survey for the vaccination provider, called “Immunization History Questionnaire.”
+  The original data set is a fixed width file (FWF). In the data set, there are 43,738 rows and 672 columns, with each row representing an individual and the each column representing the answer to a question. The questions pertain to the teenager’s immunization history, demographics, and additional household-reported health information. 
+We have truncated the data set to include 26-selected columns for the ease of observation. We have also filtered the data set to include one year, 2022, which is the most recent year of data that is published. The provided survey data will require cleaning, as there are signs of human errors present. 
+## Opening the Data Set
+
+First, we will load the readr package to open the file
+```{r}
+library(readr) #Loading the package to read the fwf
+```
+
+
+Next, we will define the column widths (beginning and end positions) and applying the column names to each position.
+```{r}
+column_position<- fwf_positions(
+  start = c(1, 89, 287, 295, 298, 314, 330, 331, 334, 336, 343, 344, 345,
+            347, 355, 359, 362, 472, 473, 495, 496, 497, 502, 504, 1296, 1297
+  ),
+  end = c(5, 92, 288, 295, 313, 329, 330, 332, 334, 336, 343, 344, 346,
+          347, 356, 359, 362, 472, 473, 495, 496, 497, 502, 504, 1296, 1297
+  ),
+  col_names = c("SEQNUMT", "YEAR", "AGE", "EDUC1", "INCPORAR", "INCPORAR_I", 
+                "INCPOV1", "INCQ298A", "LANGUAGE", "MOBIL_1", "RACEETHK", 
+                "RACE_K", "RENT_OWN", "SEX", "STATE", "FACILITY", "WELLCHILD", 
+                "P_U13HPV", "P_U13HPV3", "P_UTDHPV", "P_UTDHPV_15", 
+                "P_UTDHPV_15INT", "P_UTDHPV2", "P_UTDHPV3", "INS_STAT2_I", 
+                "INS_BREAK_I")
+)
+
+```
+
+
+Create the data frame "data" with read_fwf function. 
+```{r}
+data_frame <- read_fwf( "./NISTEENPUF22.DAT", 
+                  col_positions = column_position, 
+                  col_types = cols(.default = "c")
+)
+```
+
+
+Convert the data frame to a readable and downloadable .csv file
+```{r}
+output_file<-"NIS_Teen_Data_2022.csv"
+write.csv(data_frame, file = output_file, row.names = FALSE)
+```
+
+Read the statistics in the data file.
+```{r}
+summary(NIS_Teen_Data_2022)
+str(NIS_Teen_Data_2022)
+```
+
+## Research Question
+  We want to use the 2022 National Immunization Survey for teens to identify which socioeconomic and geographic factors are associated with HPV vaccination completion for teenagers in the U.S. Specifically, we are asking the question, What is the likelihood of a teenager being up-to-date for their HPV vaccinations in the U.S., based on socioeconomic factors and geographic distribution. The outcome of this study will be measured using the columns that pertain to HPV vaccination completion. These variables are provider-collected, and they state whether or not the teen is (1) up-to-date with 1+ HPV shot, (2) up-to-date with 2+ HPV shots, or (3) up-to-date with 3+ HPV shots (excluding all vaccinations post-survey). Measuring HPV vaccine completion with “up-to-date” variables may be more robust than vaccination rate based on those who have completed the regime (2 or more shots), because not all teens included in the survey are at the age in which they would’ve completed the full regime. This means that younger teens who are up to date with 1+ shot will not be excluded from the analysis.
+  We aim to measure determinants of socioeconomic status that are engrained into the survey questions. These factors include: family income, poverty status, income-to-poverty ratio, insurance status, insurance breaks, maternal education, living arrangement, and geographic mobility status. Additional demographic factors that are associated with healthcare access and may be examined include: race, ethnicity, language, facility in which the vaccine was administered, and whether the teen had completed a wellness exam between the ages of 11-12. Geographic distribution of the teens will be assessed by true state of residence. 
+  We would like to examine the data for correlations between HPV vaccination completion status and the aforementioned socioeconomic determinants, demographics, and geographic location. This serves as valuable information to determine differences in healthcare access and vaccination coverage for teenagers living in the U.S.
+
+## Proposed Analysis
+	For the analysis portion, we have decided to do a correlation analysis between HPV vaccination completion and each of the socioeconomic factors. When performing this, we may choose to stratify by age or gender, if we find these to be confounders. The correlation analysis cannot be performed using a multivariate model because there may be collinearity present between many of the determinants for socioeconomic status. This will lead to spurious results. Instead, the correlation between vaccination status and each factor is examined separately. 
+	Next, we may stratify this by state. Comparing these correlation values between states and regions may lead us to find patterns of healthcare accessibility in the U.S. It is generally known that those of lower income and without insurance have limited healthcare access in the U.S.(1), but it will be interesting to see if this pattern is reflected at the state level. If so, policy should be examined as it may be related to healthcare access disparities. Recent studies have examined HPV vaccination completion according to social determinants, but they have not examined geographic distribution and include data prior to 2019 (2). More recent years display differences in global HPV vaccination trends due to the COVID19 pandemic (3). Our study will fill in geographical gaps and provide updated vaccination trends based on socioeconomic factors.
+
+{{< pagebreak >}}
+
+## References
+1. Sciences, N. A. of, Engineering, & Medicine, and. (2018, March 1). Factors that affect health-care utilization. Health-Care Utilization as a Proxy in Disability Determination. https://www.ncbi.nlm.nih.gov/books/NBK500097/ 
+2. Mansfield, L. N., Chung, R. J., Silva, S. G., Merwin, E. I., & Gonzalez-Guarda, R. M. (2022). Social determinants of human papillomavirus vaccine series completion among U.S. adolescents: A mixed-methods study. SSM - population health, 18, 101082. https://doi.org/10.1016/j.ssmph.2022.101082
+3. Casey, R. M., Akaba, H., Hyde, T. B, et al. (2024). Covid-19 pandemic and equity of global human papillomavirus vaccination: descriptive study of World Health Organization-Unicef vaccination coverage estimates. BMJ Medicine, 3, 000726. doi: 10.1136/bmjmed-2023-000726
