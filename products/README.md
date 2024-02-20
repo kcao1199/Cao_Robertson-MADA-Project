@@ -1,11 +1,12 @@
-The folders inside this folder should contain all the products of your project.
+This folder contains the products of Kelly and Rachel's project. 
 
-For a classical academic project, this will be a peer-reviewed manuscript. 
-The `manuscript` folder contains a template. This template is structured as a report for a class, but you can easily adjust it.
+The manuscript, the the format of a peer-reviewed paper, is contained within the 'manuscript' folder as a DOCX and QMD. 
 
-Most manuscripts these days have supplementary material, place those into the `supplement` folder. (You can have the supplement inside the `manuscript` folder or next to it, whatever is better for your setup).
+Supplementary materials are contained within the 'supplement' folder of the 'manuscript' folder.
 
-Often, you might make slides for an oral presentation, place those in the `slides` folder. 
+A slide presentation will be contained within the 'slide' folder.
+
+Notes from Dr. Handel:
 
 If any figure or other file is created by running code, it should go into a subfolder inside `/results`. If something is generated manually, e.g. a diagram using biorender, place it in the appropriate `assets` folder inside `products`. As needed, make new (sub)-folders.
 

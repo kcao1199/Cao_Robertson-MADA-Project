@@ -1,0 +1,91 @@
+---
+title: "Data Processing"
+author: "Kelly Cao and Rachel Robertson"
+date: "2023-01-03"
+output: html_document
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+# Setup
+
+This chunk pulls the R-script entitled Creating_Data_Frame.R.
+
+```{r, include=FALSE, cache=FALSE}
+knitr::read_chunk('processing-code/creating-df/Creating_Data_Frame.R')
+```
+
+```{r, include=FALSE, cache=FALSE}
+knitr::read_chunk('R/processing-code/Cleaning Data/cleaning1.R')
+```
+
+Load needed packages.
+
+```{r, packages, message = FALSE, warning = FALSE}
+```
+
+# Data loading
+
+Note that for functions that come from specific packages (instead of base R), I often specify both package and function like so: package::function() that's not required one could just call the function specifying the package makes it clearer where the function "lives", but it adds typing.
+You can do it either way.
+
+```{r, loaddata}
+```
+
+# Specifying Factor Variables
+
+By inspecting the data as done above, we find some problems that need addressing:
+
+First, there is an entry for height which says "sixty" instead of a number.
+Does that mean it should be a numeric 60?
+It somehow doesn't make sense since the weight is 60kg, which can't happen for a 60cm person (a baby).
+Since we don't know how to fix this, we might decide to remove the person.
+This "sixty" entry also turned all Height entries into characters instead of numeric.
+That conversion to character also means that our summary function isn't very meaningful.
+So let's fix that first.
+
+```{r, cleandata1}
+```
+
+Now we see that there is one person with a height of 6.
+That could be a typo, or someone mistakenly entered their height in feet.
+Since we unfortunately don't know, we might need to remove this person, which we'll do here.
+
+# Save data
+
+All done, data is clean now.
+Time to save.
+Let's assign at the end to some final variable, this makes it easier to add further cleaning steps above.
+
+Finally, we save the clean data as RDS file.
+I suggest you save your processed and cleaned data as RDS or RDA/Rdata files.
+This preserves coding like factors, characters, numeric, etc.
+If you save as CSV, that information would get lost.
+However, CSV is better for sharing with others since it's plain text.
+If you do CSV, you might want to write down somewhere what each variable is.
+
+See here for some suggestions on how to store your processed data: http://www.sthda.com/english/wiki/saving-data-into-r-data-format-rds-and-rdata
+
+```{r, savedata}
+```
+
+# Cleaning Data
+
+```{r, loaddata2}
+```
+
+## Exploring the data
+
+```{r, exploredata2}
+```
+
+## Eliminating NA Values and Columns
+
+```{r, cleandata2}
+```
+
+## Saving the Data Frame
+
+```{r, savedata2}
+```

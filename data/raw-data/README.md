@@ -49,4 +49,4 @@ INSURANCE/UNINSURED): IMPUTED
 
 'WELLCHILD'=	DID TEEN RECEIVE AN 11-12 YEAR OLD WELL CHILD EXAM OR CHECK-UP?
 
-This raw data contains errors from human collection and must be cleaned. Not all of the data columns may eb kept in the processed data folder.
+This raw data contains errors from human collection and must be cleaned. Not all of the data columns may be kept in the processed data folder.

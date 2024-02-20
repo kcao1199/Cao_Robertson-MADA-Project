@@ -1,14 +1,12 @@
-The folders inside this folder should contain all data at various stages.
+The folders raw data and processed data include the NIS Teen Vaccination Survey Data from 2022. The original DAT file is placed in the 'raw-data' folder while the processed data is contained in the 'processed-data' folder. 
 
-This data is being loaded/manipulated/changed/saved with code from the `code` folders.
+The data files here are loaded/manipulated/changed/saved using the code from the 'code' folders..
 
-You should place the raw data in the `raw_data` folder and not edit it. Ever!
+The DAT fine in the 'raw-data' folder, has not been changed, but manipulated with code to produce the CSV files in the 'processed-data' folder.
 
-Ideally, load the raw data into R and do all changes there with code, so everything is automatically reproducible and documented.
+Note: Sub-folders under 'processed-data' will be created if further processing steps are required. 
 
-Sometimes, you need to edit the files in the format you got. For instance, Excel files are sometimes so poorly formatted that it's close to impossible to read them into R, or the persons you got the data from used color to code some information, which of course won't import into R. In those cases, you might have to make modifications in a software other than R. If you need to make edits in whatever format you got the data (e.g. Excel), make a copy and place those copies in a separate folder, AND ONLY EDIT THOSE COPIES. Also, write down somewhere the edits you made. 
-
-Add as many sub-folders as suitable. If you only have a single processing step, one sub-folder for processed data is enough. If you have multiple stages of cleaning and processing, additional sub-folders might be useful. Adjust based on the complexity of your project.
+Dr. Handel's notes:
 
 I suggest you save your processed and cleaned data as RDS or RDA/Rdata files. This preserves coding like factors, characters, numeric, etc. If you save as CSV, that information would get lost.
 However, CSV is better for sharing with others since it's plain text. If you do CSV, you might want to write down somewhere what each variable is.

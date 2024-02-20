@@ -4,6 +4,8 @@ library(here) #for data loading/saving
 library(dplyr)
 library(skimr)
 library(ggplot2)
+library(tidyr)
+library(tidyverse)
 
 ## ---- loaddata --------
 #Path to data. Note the use of the here() package and not absolute paths
@@ -11,14 +13,14 @@ data_location <- here::here("data","processed_data","processeddata.rds")
 #load data
 mydata <- readRDS(data_location)
 
-## ---- table1 --------
+## ---- summary --------
 summary_df = skimr::skim(mydata)
 print(summary_df)
 # save to file
 summarytable_file = here("results", "summarytable.rds")
 saveRDS(summary_df, file = summarytable_file)
 
-## ---- height --------
+## ---- income-poverty --------
 p1 <- mydata %>% ggplot(aes(x=Height)) + geom_histogram() 
 plot(p1)
 figure_file = here("results","height_distribution.png")
