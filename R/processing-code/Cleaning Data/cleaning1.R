@@ -81,6 +81,7 @@ str(NISTeenVax4) #Check the remaining variables
 ## ---- savedata2 --------
 output_file2<- here("data", "processed-data", "NIS_Teen_Data_2022_clean1.csv")
 write.csv(NISTeenVax4, file = output_file2, row.names = FALSE)
-saveRDS(NISTeenVax4, file = "./data/processed-data/clen_data1")
+saveRDS(NISTeenVax4, file = "./data/processed-data/cleandata1.rds")
+
 
 
