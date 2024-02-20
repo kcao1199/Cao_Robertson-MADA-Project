@@ -34,7 +34,7 @@ print(factor_levels)#Pritn factor levels for only the factor columns
 
 #Several columns contain factor levels that are labelled, "Data missing", "Missing data", "Unknown", "Refused", Missing in error", and "Don't know". I will replace these values for each variable with an NA in R so that they will be counted as missing values for analysis.
 ## ---- cleandata2 --------
-missing_values <- c("Data Missing", "MISSING Data", "Missing Data", "DON'T KNOW", "UNKNOWN", "MISSING IN ERROR", "REFUSED") #Group all of the factor levels that indicate a missing value
+missing_values <- c("Data Missing", "MISSING Data", "Missing Data", "MISSING IN ERROR") #Group all of the factor levels that indicate a missing value
 
 #After back and forth with ChatGPT3.5, it suggested to use the dplyr mutate function and replace function to specify that factor variables with the levels in the group above will have those level values replaced with NA
 NISTeenVax2 <- NISTeenVax %>% #Create new dataframe
@@ -67,6 +67,13 @@ if (nrow(rows_with_missing_in_all) > 0) {
 
 NISTeenVax3 <- NISTeenVax2 %>%
   filter(!is.na(P_UTDHPV)) #drop the rows with NA values in P_UTDHPV
+NISTeenVax3 <- NISTeenVax3 %>%
+  filter(!is.na(INS_BREAK_I))
+NISTeenVax3 <- NISTeenVax3 %>%
+  filter(!is.na(FACILITY))
+
+skimr::skim(NISTeenVax3) #check again for missing values in these variables
+gg_miss_var(NISTeenVax3)
 skimr::skim(NISTeenVax3) #check again for missing values in these variables
 gg_miss_var(NISTeenVax3)
 
