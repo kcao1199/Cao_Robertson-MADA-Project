@@ -19,7 +19,7 @@ column_position<- fwf_positions(
                 "P_UTDHPV_15INT", "P_UTDHPV2", "P_UTDHPV3", "INS_STAT2_I", 
                 "INS_BREAK_I")
 )
-file_path <- here("products", "manuscript", "NISTEENPUF22.DAT")
+file_path <- here("data", "raw-data", "NISTEENPUF22.DAT")
 
 data_frame <- read_fwf(file_path, 
                        col_positions = column_position,
@@ -106,4 +106,6 @@ str(data)
 
 output_file<- here("products", "manuscript", "NIS_Teen_Data_2022.csv")
 write.csv(data, file = output_file, row.names = FALSE)
+
+saveRDS(data, file = "./data/processed-data/processeddata.rds")
         

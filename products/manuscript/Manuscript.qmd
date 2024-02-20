@@ -150,6 +150,9 @@ The data will then be converted the data frame to a readable and downloadable .c
 ```{r, echo=FALSE, message=FALSE}
 output_file<-"NIS_Teen_Data_2022.csv"
 write.csv(data, file = output_file, row.names = FALSE)
+
+#A .rds file of it is saved in the following folder
+saveRDS(data, file = "./data/processed-data/processeddata.rds")
 ```
 
 
