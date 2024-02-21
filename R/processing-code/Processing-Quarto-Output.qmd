@@ -13,11 +13,8 @@ editor:
 This chunk pulls the R-script entitled Creating_Data_Frame.R.
 
 ```{r, include=FALSE, cache=FALSE}
-knitr::read_chunk('processing-code/creating-df/Creating_Data_Frame.R')
-```
-
-```{r, include=FALSE, cache=FALSE}
-knitr::read_chunk('R/processing-code/Cleaning Data/cleaning1.R')
+library(here)
+knitr::read_chunk(here("./R/processing-code/creating-df/Creating_Data_Frame.R"))
 ```
 
 Load needed packages.
@@ -45,7 +42,8 @@ This "sixty" entry also turned all Height entries into characters instead of num
 That conversion to character also means that our summary function isn't very meaningful.
 So let's fix that first.
 
-```{r, cleandata1}
+```{r, cleandata}
+
 ```
 
 Now we see that there is one person with a height of 6.
@@ -71,6 +69,14 @@ See here for some suggestions on how to store your processed data: http://www.st
 ```
 
 # Cleaning Data
+
+```{r, include=FALSE, cache=FALSE}
+library(here)
+knitr::read_chunk(here("./R/processing-code/cleaningdata/cleaning1.R"))
+```
+
+```{r, packages2}
+```
 
 ```{r, loaddata2}
 ```
