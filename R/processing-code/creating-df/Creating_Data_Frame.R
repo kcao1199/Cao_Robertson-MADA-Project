@@ -27,8 +27,9 @@ data_frame <- read_fwf(file_path,
                        col_positions = column_position,
                        col_types = cols(.default = "c")
                        )
-                       
-## ---- cleandata1 --------
+                     
+  
+## ---- cleandata --------
 EDUC1levels=c(1,2,3,4)
 EDUC1labels=c("LESS THAN 12 YEARS", "12 YEARS", "MORE THAN 12 YEARS, NON-COLLEGE GRAD", "COLLEGE GRADUATE")
 
@@ -107,8 +108,9 @@ data<-mutate(data_frame,
 summary(data)
 str(data)
 
+## ---- savedata --------
 output_file<- here("data", "processed-data", "NIS_Teen_Data_2022.csv")
 write.csv(data, file = output_file, row.names = FALSE)
-
-saveRDS(data, file = "./data/processed-data/processeddata.rds")
+save_path <- here("./data/processed-data/processeddata.rds")
+saveRDS(data, file = save_path )
         
