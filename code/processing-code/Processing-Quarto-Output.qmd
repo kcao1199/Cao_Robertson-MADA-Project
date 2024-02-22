@@ -1,0 +1,70 @@
+---
+title: "Data Processing"
+author: "Kelly Cao and Rachel Robertson"
+date: "2023-01-03"
+output: html_document
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+# Setup
+
+This chunk pulls the R-script entitled Creating_Data_Frame.R.
+
+```{r, include=FALSE, cache=FALSE}
+library(here)
+knitr::read_chunk(here("./code/processing-code/creating-df/Creating_Data_Frame.R"))
+```
+
+Load needed packages.
+
+```{r, packages, message = FALSE, warning = FALSE}
+```
+
+# Data loading
+
+```{r, loaddata}
+```
+
+# Specifying Factor Variables
+
+
+```{r, cleandata}
+
+```
+
+
+# Save data
+
+
+```{r, savedata}
+```
+
+# Cleaning Data
+
+```{r, include=FALSE, cache=FALSE}
+library(here)
+knitr::read_chunk(here("./code/processing-code/cleaningdata/cleaning1.R"))
+```
+
+```{r, packages2}
+```
+
+```{r, loaddata2}
+```
+
+## Exploring the data
+
+```{r, exploredata2}
+```
+
+## Eliminating NA Values and Columns
+
+```{r, cleandata2}
+```
+
+## Saving the Data Frame
+
+```{r, savedata2}
+```
