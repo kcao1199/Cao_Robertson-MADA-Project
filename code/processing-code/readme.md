@@ -1,3 +1,6 @@
+This folder contains the code used for processing our data. The original code is in R documents contained within sub-folders, while the 'Processing-Quarto-Output.qmd' file pulls R code from both R documents in chunks to provide a cumulative commentary on data processing. The 'cleaningdata' folder contains the R document with the original code to clean the data. The 'creating-df' folder contains the R document with code to pull the data from the original datafile and create a new data frame with our desired variables. The 'Processing-Quarto-Output_files' folder and 'figure-html' sub-folder contains all of the figures produced from the data cleaning code.
+
+Our notes [ignore if reviewing repository]:
 This folder contains code for processing data.
 
 It's the same code done 3 times:

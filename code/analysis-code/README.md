@@ -1,4 +1,6 @@
-Our notes: 
+This 'analysis-code' folder will contain the code used for analysis in an R document, which is pulled in chunks to a Quarto document.
+
+Notes to ourselves [ignore if reviewing this project]: 
 
 The reference files will be deleted for clarity. Review template for the references.
 

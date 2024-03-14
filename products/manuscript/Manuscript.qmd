@@ -48,10 +48,18 @@ This serves as valuable information to determine differences in healthcare acces
 
 ## Proposed Analysis
 
-```         
-For the analysis portion, we have decided to do a correlation analysis between HPV vaccination completion and each of the socioeconomic factors. When performing this, we may choose to stratify by age or gender, if we find these to be confounders. The correlation analysis cannot be performed using a multivariate model because there may be collinearity present between many of the determinants for socioeconomic status. This will lead to spurious results. Instead, the correlation between vaccination status and each factor is examined separately. 
-Next, we may stratify this by state. Comparing these correlation values between states and regions may lead us to find patterns of healthcare accessibility in the U.S. It is generally known that those of lower income and without insurance have limited healthcare access in the U.S.(1), but it will be interesting to see if this pattern is reflected at the state level. If so, policy should be examined as it may be related to healthcare access disparities. Recent studies have examined HPV vaccination completion according to social determinants, but they have not examined geographic distribution and include data prior to 2019 (2). More recent years display differences in global HPV vaccination trends due to the COVID19 pandemic (3). Our study will fill in geographical gaps and provide updated vaccination trends based on socioeconomic factors.
-```
+For the analysis portion, we have decided to do a correlation analysis between HPV vaccination completion and each of the socioeconomic factors.
+When performing this, we may choose to stratify by age or gender, if we find these to be confounders.
+The correlation analysis cannot be performed using a multivariate model because there may be collinearity present between many of the determinants for socioeconomic status.
+This will lead to spurious results.
+Instead, the correlation between vaccination status and each factor is examined separately.
+Next, we may stratify this by state.
+Comparing these correlation values between states and regions may lead us to find patterns of healthcare accessibility in the U.S.
+It is generally known that those of lower income and without insurance have limited healthcare access in the U.S.(1), but it will be interesting to see if this pattern is reflected at the state level.
+If so, policy should be examined as it may be related to healthcare access disparities.
+Recent studies have examined HPV vaccination completion according to social determinants, but they have not examined geographic distribution and include data prior to 2019 (2).
+More recent years display differences in global HPV vaccination trends due to the COVID19 pandemic (3).
+Our study will fill in geographical gaps and provide updated vaccination trends based on socioeconomic factors.
 
 {{< pagebreak >}}
 
@@ -83,97 +91,48 @@ We saved the cleaned data as an rds and csv in the 'processed-data' folder.
 
 ### Exploratory Analysis
 
-```{r, include=FALSE, cache=FALSE}
-library(here)
-knitr::read_chunk(here("./code/eda-code/edacode.R"))
-```
+First we loaded the packages needed for the exploratory analysis.
+And then we loaded the data called 'cleandata1' from the 'processed-data' folder.
 
-First we will load the packages needed for the exploratory analysis.
-```{r, packages, message = FALSE, warning = FALSE}
-```
-
-Next, we will load the data called 'cleandata1' from the 'processed-data' folder.
-```{r, loaddata}
-```
-
-The following data set has been cleaned.
-Any observations with NAs has been removed.
-
-```{r, table1}
-
-```
-
+We start our exploratory analysis by displaying the distribution of our predictors, including the socioeconomic variables that we chose for analysis.
 The distribution of the numerical income to poverty ratio can be shown below.
 It displays a value from 1-3.
-A ratio displaying less than 1 depicts an income less than the poverty level.
-Any income ratio \>1 indicates an income greater than the poverty level.
+A ratio displaying less than 1 depicts an income less than the poverty level.Any income ratio \>1 indicates an income greater than the poverty level.
 Most of the observations were gathered from households with income ratios of 3, as shown by the skewed plot below.
+![Figure 1. Income-poverty ratio distribution](results/figures/income.png)
 
-```{r, INCPORAR_I}
-
-```
-
+Nest, the distribution of surveys given per state was analyzed.
 The state variable shows a more uniformed distribution, suggesting that the observations were gathered fairly across the US states and territory.
 Although it is noted a few territories provides 0 observations.
-
-```{r, STATE}
-
-```
+![Figure 2. State dsitribution](results/figures/state_distribution.png)
 
 The family income variable provides a more normal distribution with the majority of the observation coming from \$75000+ income level.
-
-```{r, INCQ298A}
-
-```
+![Figure 3. The family income distribution](results/figures/family.income.distribution.png)
 
 The race and ethnicity variables show a distribution that is similar to the U.S. census data, which concludes that the racial composition of the U.S. is 58.9% white, 13.6% African American, and 19.1% Hispanic or Latino.
 
-```{r, RACEETHK}
-
-```
-
-```{r, RACE_K}
-
-```
+![Figure 4.Racial distribution](results/figures/race.distribution.png) ![Figure 5.Ethnicity distribution](results/figures/ethnicity.distribution.png)
 
 The Insurance status variable shows that the majority of the observations came from households with private insurance only.
 This is followed by any medicaid and then other insurance.
 This is mirrored in the facility variable, where a majority of its observations show private facilities being the location.
-
-```{r, INS_STAT2_I}
-
-```
-
-```{r, FACILITY}
-
-```
+![Figure 6. Insurance status distribution](results/figures/insurance.status.distribution.png) ![Figure 7. Distribution of the medical facility where the survey was administerred](results/figures/facility.distribution.png)
 
 The vaccination variable indicates nearly 80% of the observations had an Up-to-date status for the 1+ shot HPV vaccination.
+We will follow by examining the percentage of up-to-date vaccination status by state.
 
-```{r, Vaccination}
-
-```
-
-We examine the percentage of up-to-date vaccination status by state.
-
-```{r, state-vaccine}
-
-```
+![Figure 8. Vaccine status distribution](results/figures/State-vaccine-completion.png)
 
 We examine the facility that submitted the survey, which is stratified by the vaccine completion status of the survey subject.
 
-```{r, facility-vaccine}
-
-```
+![Figure 9.Facility and vaccine completion distribution](results/figures/facility-vaccination.png)
 
 We examine the percentage of vaccination completion by race and ethnicity.
 Because there are different counts of each race/ethnicity for each factor level, the percentage of those with up-to-date vaccine status out of each race/ethnicity level was determined.
 This adjusts for the different counts in each racial category.
 The Hispanic ethnicity was found to have the highest vaccine completion while non-hispanic white has the lowest.
 
-```{r, race-ethnicity-vaccine}
-
-```
+![Figure 10. Distribution of vaccine completion stratified by race and ethnicity](results/figures/race-ethnicity-vaccination.png)
 
 ### Model and Plot Fitting
 
@@ -182,33 +141,23 @@ The box plot indicates little difference between the two status.
 A statistical model is fitted to the same variables.
 A p-value of 0.1358 suggests there is little significance between the income-poverty variable and the vaccination status.
 
-```{r, fitfig1}
-
-```
+![Figure 11.](figures/results/income-vaccination.png)
 
 A boxplot is created with income-poverty ratio to insurance status.
 The box plot indicates there are distinct difference between the two status.
 A statistical model is fitted to the same variables.
 The p-value of \< 2.26e-16 suggests there is statistical significance between the income-poverty variable and the insurance status.
 
-```{r, fitfig2}
-
-```
+![Figure 12. Income poverty ratio and insurance status](results/figures/insurance-income-stratified.png)
 
 Income-poverty ratio was fit to vaccine status and insurance status in a multi-linear model.
-
-```{r, fitfig3}
-
-```
 
 A box-plot was created for income-poverty level versus race/ethnicity and this was stratified by vaccine completion (UTD or NOT UTD).
 A lower income-poverty ratio means the group is closer to the poverty line.
 For the non-Hispanic black and Hispanic racial and ethnic groups, vaccine completion corresponded with a lower mean income-poverty ratio.
 For mixed ethnic groups, vaccine completion corresponded with a higher mean income-poverty ratio.
 
-```{r, fitfig4}
-
-```
+![Figure 14. Income-poverty level versus ethnic group](results/figures/raceeth-income-stratified.png)
 
 {{< pagebreak >}}
 

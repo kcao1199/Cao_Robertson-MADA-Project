@@ -1,12 +1,12 @@
 # Overview
 
-A template file and folder structure for a data analysis project/paper done with R/Quarto/Github. 
+This repository contains the code and products created for the project on HPV vaccination completion rates depending on several socioeconomic factors, by Kelly Cao and Rachel Robertson.
 
 # Pre-requisites
 
-This is a template for a data analysis project using R, Quarto, Github and a reference manager that can handle bibtex. It is also assumed that you have a word processor installed (e.g. MS Word or [LibreOffice](https://www.libreoffice.org/)). You need that software stack to make use of this template.
+This data analysis project uses R, Quarto, Github and a reference manager that can handle bibtex. It is also assumed that you have a word processor installed (e.g. MS Word or [LibreOffice](https://www.libreoffice.org/)). You need that software stack to make use of this template.
 
-# Template structure
+# Structure
 
 * All data goes into the subfolders inside the `data` folder.
 * All code goes into the `code` folder or subfolders.
@@ -16,9 +16,10 @@ This is a template for a data analysis project using R, Quarto, Github and a ref
 used to keep track of packages.
 * See the various `README.md` files in those folders for some more information.
 
-# Template content 
+# Dr.Handel's notes [ignore if reviewing project]:
+## Template content 
 
-The template comes with a few files that are meant as illustrative examples of the kinds of content you would place in the different folders. See the `readme` files in each folder for more details.
+See the `readme` files in each folder for more details.
 
 * There is a simple, made-up dataset in the `raw_data` folder. 
 * The `processing_code` folder contains several files that load the raw data, perform a bit of cleaning, and save the result in the `processed_data` folder. 

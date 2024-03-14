@@ -1,9 +1,9 @@
-Place your various R or Quarto files in the appropriate folders.
+This folder contains the R and Quarto files containing all of the original code.
 
-You can either have fewer large scripts, or multiple scripts that do only specific actions. Those can be R or Quarto files. In either case, document the scripts and what goes on in them so well that someone else (including future you) can easily figure out what is happening.
+The 'analysis-code' folder contains all of the code used for the data analysis, model fitting, and model testing. 
 
-The scripts should load the appropriate data (e.g. raw or processed), perform actions, and save results (e.g. processed data, figures, computed values) in the appropriate folders. Document somewhere what inputs each script takes and where output is placed. 
+The 'eda-code' folder contains code used for exploratory data analysis.
 
-If scripts need to be run in a specific order, document this. Either as comments in the script, or in a separate text file such as this readme file. Ideally of course in both locations.
+The 'processing-code' folder contains code for pulling the data and cleaning the data.
 
-Depending on your specific project, you might want to have further folders/sub-folders.
+The code in the R documents are pulled into Quarto documents for each step in the workflow. To view the code with commentary, the Quarto documents should be run in the order of 'processing-code' > 'Processing-Quarto-Output.qmd', then 'eda-code' > 'EDA-code.qmd', and lastly 'analysis-code' > 'analysis-code.qmd'.
