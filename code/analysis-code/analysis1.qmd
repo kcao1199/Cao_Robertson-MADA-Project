@@ -33,37 +33,55 @@ I will start by opening the libraries necessary.
 ```{r}
 library(ggplot2)
 library(car) # to perform VIF analysis
-library(carData) # to look at
+library(carData)
 ```
 
-Next I will produce a residual plot
+Next I will produce a residual plot. I asked ChatGPT how to use ggplot to produce a residual plot for a logistic regression function and was given the base code, which I modified to fit my analysis.
 ```{r}
-model <- glm(glm(P_UTDHPV ~ AGE + SEX + STATE + INS_STAT2_I + INS_BREAK_I + INCPOV1 + RACEETHK + EDUC1 + LANGUAGE + MOBIL_1 + FACILITY, data = mydata2, family = binomial)
-# Residual plot
-residualPlot <- function(model) {
-  ggplot(data = mydata2(fit = predict(model), residuals = resid(model)),
+# First, I will define the model given to me by the step wise comparison
+model <- glm(P_UTDHPV ~ AGE + SEX + STATE + INS_STAT2_I + INS_BREAK_I + INCPOV1 + RACEETHK + EDUC1 + LANGUAGE + MOBIL_1 + FACILITY, data = mydata2, family = binomial)
+
+# Define function for residual plot of logistic regression
+residualPlotLogit <- function(model) {
+  fitted_prob <- predict(model, type = "response") # Predicted probabilities
+  residuals <- resid(model, type = "response") # Calculate residuals
+  plot_data <- data.frame(fit = fitted_prob, residuals = residuals) # Create data frame
+  
+  # Plot
+  ggplot(data = plot_data,
          aes(x = fit, y = residuals)) +
     geom_point() +
     geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
-    xlab("Fitted values") +
+    xlab("Fitted probabilities") +
     ylab("Residuals") +
-    ggtitle("Residual Plot")
+    ggtitle("Residual Plot of Proposed Stepwise Model")
 }
 
-# VIF diagnostics
-vifDiagnostics <- function(model) {
-  vif_values <- car::vif(model)
-  print(vif_values)
-}
-
-# Create residual plot
-residual_plot <- residualPlot(fitall)
-print(residual_plot)
-
-# Calculate VIFs
-vif_diagnostics <- vifDiagnostics(model)
-print(vif_diagnostics)
+# Create the residual plot
+residual_plot_logit <- residualPlotLogit(fitall)
+print(residual_plot_logit)
 
 ```
+The residual plot shows clear collinearity that is not represented by the current model. To find the predictors with collinnearity we will use a correlation matrix. This is because the VIF analysis will not run when multicollinearity is too high.
+```{r}
+factor_data <- model.matrix(~ STATE + FACILITY + RACEETHK + AGE + EDUC1 + INS_BREAK_I + INCPOV1 + SEX + LANGUAGE + MOBIL_1 + INS_STAT2_I, data = mydata2)
+
+# Compute correlation matrix
+correlation_matrix <- cor(factor_data)
+
+# Find indices of correlation matrix where values are 1 or 0
+indices <- which(!is.na(correlation_matrix) & correlation_matrix == 1 | correlation_matrix == 0, arr.ind = TRUE)
+
+# Extract variable names corresponding to these indices
+variable_pairs <- rownames(correlation_matrix)[indices[,1]]
+variable_pairs <- cbind(variable_pairs, colnames(correlation_matrix)[indices[,2]])
+
+# Print variable pairs with correlation values of 1 or 0
+print(variable_pairs)
+
+
 ```
+This shows that many levels from each of the variables show multicollineaity. This might be addressed by using a different model for analysis.
+
+
 
