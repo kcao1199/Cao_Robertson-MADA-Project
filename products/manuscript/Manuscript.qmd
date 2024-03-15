@@ -63,11 +63,11 @@ Our study will fill in geographical gaps and provide updated vaccination trends 
 
 {{< pagebreak >}}
 
-## Methods
+# Methods
 
-### Data Cleaning and Processing
+## Data Cleaning and Processing
 
-#### Loading the data
+### Loading the data
 
 The data was loaded from the original DAT file, entitled 'NISTEENPUF22.DAT' by specifying the column positions within the data file.
 The columns were then read and made into a data frame.
@@ -89,7 +89,7 @@ We also eliminated rows with small numbers missing values, which were within the
 Lastly, we eliminatethe year column, as all of the data comes from the year 2022.
 We saved the cleaned data as an rds and csv in the 'processed-data' folder.
 
-### Exploratory Analysis
+## Exploratory Analysis
 
 First we loaded the packages needed for the exploratory analysis.
 And then we loaded the data called 'cleandata1' from the 'processed-data' folder.
@@ -134,7 +134,7 @@ The Hispanic ethnicity was found to have the highest vaccine completion while no
 
 ![Figure 10. Distribution of vaccine completion stratified by race and ethnicity](results/figures/race-ethnicity-vaccination.png)
 
-### Model and Plot Fitting
+## Model and Plot Fitting
 
 A boxplot is created with income-poverty ratio to vaccination status.
 The box plot indicates little difference between the two status.
@@ -159,10 +159,42 @@ For mixed ethnic groups, vaccine completion corresponded with a higher mean inco
 
 ![Figure 14. Income-poverty level versus ethnic group](results/figures/raceeth-income-stratified.png)
 
-{{< pagebreak >}}
+{{< pagebreak >}} 
+# Analysis
 
-## References
+We begin with various socioeconomic predictors that interest us.
+Some of these predictors are a subset of the other, or may be used to describe an overall category.
+For this reason
+
+The variables used were chosen based on their interpretability and applicability to our research question “Which socioeconomic and geographic factors impact HPV vaccine completion rates among teenagers?”
+.
+There are seven potential outcome variables for HPV vaccine completion:
+
+![Table 3. Human Papillomavirus vaccine status variables and meanings.](assets/UTDHPV-variable-table.png)
+
+The first option, P_UTDHPV was the chosen outcome as it is the most general.
+It has the benefit of being able to use Age as a predictor variable and also not biasing the model towards older ages who are required to receive more than one shot to be considered up-to-date.
+Additionally, in April of 2022, the SAGE work group of the WHO officially recommended a single-dose HPV vaccine regime, because vaccine efficacy was found to be significantly high with a single dose.
+This recommendation was given with the goal of increasing vaccine coverage in areas with lower vaccine accessibility and availability (4).
+In September of 2023, PAHO followed suit in recommending a single-dose HPV vaccine regime for the Americas (5).
+       
+The predictor variables we chose to examine are listed below:
+
+![Table 4. Potential predictor variable names and meanings.](assets/Predictor-variable-table.png)
+
+INCOPAR or income-poverty ratio was excluded because this is reflected by the income and poverty status variables, separately.
+Additionally, this is a numeric variable while the others are categorical.
+RACE_K or race was excluded because race is included within the RACEETHK variable.
+RACEETHK is ideal because it includes both race and ethnicity.
+
+To determine which predictor variables will be best suited for a general linear model, I will do a step-wise comparison and then measure the resulting models with AIC and WAIC.
+
+
+
+# References
 
 1.  Sciences, N. A. of, Engineering, & Medicine, and. (2018, March 1). Factors that affect health-care utilization. Health-Care Utilization as a Proxy in Disability Determination. https://www.ncbi.nlm.nih.gov/books/NBK500097/
 2.  Mansfield, L. N., Chung, R. J., Silva, S. G., Merwin, E. I., & Gonzalez-Guarda, R. M. (2022). Social determinants of human papillomavirus vaccine series completion among U.S. adolescents: A mixed-methods study. SSM - population health, 18, 101082. https://doi.org/10.1016/j.ssmph.2022.101082
 3.  Casey, R. M., Akaba, H., Hyde, T. B, et al. (2024). Covid-19 pandemic and equity of global human papillomavirus vaccination: descriptive study of World Health Organization-Unicef vaccination coverage estimates. BMJ Medicine, 3, 000726. doi: 10.1136/bmjmed-2023-000726
+4.  https://www.who.int/news/item/20-12-2022-WHO-updates-recommendations-on-HPV-vaccination-schedule
+5.  https://www.paho.org/en/news/5-9-2023-paho-technical-advisory-group-recommends-countries-americas-use-single-dose-hpv

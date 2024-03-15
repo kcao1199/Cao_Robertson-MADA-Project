@@ -1,0 +1,69 @@
+---
+title: "Data Analysis and Modelling of Teen Vaccination Surveys"
+date: "`r format(Sys.Date()'"
+Author: Kelly Cao and Rachel Robertson
+output: html_document
+editor: 
+  markdown: 
+    wrap: sentence
+---
+First, I will start by setting an equation for the generalized logistic regression model with all of the predictor variables intended for use.
+```{r}
+levels(mydata$P_UTDHPV)
+mydata2 <- droplevels(mydata[!mydata$P_UTDHPV == 'Missing Data', ]) # I will do some brief cleaning and remove all rows with missing values for our response variable, 'P_UTDHPV', to perform a binomial regression
+str(mydata2$P_UTDHPV) # Check for removal of missing values
+fitall <- glm(P_UTDHPV ~ AGE + SEX + STATE + INS_STAT2_I + INCQ298A + INS_BREAK_I + INCPOV1 + RACEETHK + EDUC1 + LANGUAGE + MOBIL_1 + RENT_OWN + FACILITY, data = mydata2, family = binomial) # define the equation for the binomial logistic regression
+```
+
+
+Now, I will set the start of the step-wise comparison, using a model with an intercept only (or blank model).
+```{r}
+fitstart <- glm(P_UTDHPV ~ 1, data=mydata2, family = binomial)
+```
+
+Now I will start the step-wise comparison in both the forwards and backwards direction to allow the model to add or drop predictors depending on the responding AIC value.
+```{r}
+step(fitstart, direction = "both", scope = list(lower = ~1, upper = ~ AGE + SEX + STATE + INS_STAT2_I + INCQ298A + INS_BREAK_I + INCPOV1 + RACEETHK + EDUC1 + LANGUAGE + MOBIL_1 + RENT_OWN + FACILITY), data = mydata, family = binomial) # define the lower and upper limits of the step wise comparison 
+```
+The model chosen includes the predictors STATE, FACILITY, RACEETHK, AGE, EDUC1, INS_BREAK_I, INCPOV1, SEX, LANGUAGE, MOBIL_1, and INS_STAT2_I. 
+Because of the extremely high residual value, I will perform some diagnostics to determine what is the issue. First, I will look at a residual plot to check for non linearity. Next, I will use a VIF analysis to check for multicollinearity. I am suspicious of co linearity as many of these socioeconomic predicts might be inherently related.
+
+I consulted ChatGPT to ask how to perform a VIF analysis in R and was recommended the packages 'car' and 'carData' using the vif() function.
+I will start by opening the libraries necessary.
+```{r}
+library(ggplot2)
+library(car) # to perform VIF analysis
+library(carData) # to look at
+```
+
+Next I will produce a residual plot
+```{r}
+model <- glm(glm(P_UTDHPV ~ AGE + SEX + STATE + INS_STAT2_I + INS_BREAK_I + INCPOV1 + RACEETHK + EDUC1 + LANGUAGE + MOBIL_1 + FACILITY, data = mydata2, family = binomial)
+# Residual plot
+residualPlot <- function(model) {
+  ggplot(data = mydata2(fit = predict(model), residuals = resid(model)),
+         aes(x = fit, y = residuals)) +
+    geom_point() +
+    geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
+    xlab("Fitted values") +
+    ylab("Residuals") +
+    ggtitle("Residual Plot")
+}
+
+# VIF diagnostics
+vifDiagnostics <- function(model) {
+  vif_values <- car::vif(model)
+  print(vif_values)
+}
+
+# Create residual plot
+residual_plot <- residualPlot(fitall)
+print(residual_plot)
+
+# Calculate VIFs
+vif_diagnostics <- vifDiagnostics(model)
+print(vif_diagnostics)
+
+```
+```
+
