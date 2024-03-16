@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.450">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Data Analysis and Modelling of Teen Vaccination Surveys</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="analysis1_files/libs/clipboard/clipboard.min.js"></script>
+<script src="analysis1_files/libs/quarto-html/quarto.js"></script>
+<script src="analysis1_files/libs/quarto-html/popper.min.js"></script>
+<script src="analysis1_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="analysis1_files/libs/quarto-html/anchor.min.js"></script>
+<link href="analysis1_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="analysis1_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="analysis1_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="analysis1_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="analysis1_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+
+
+</head>
+
+<body class="fullcontent">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Data Analysis and Modelling of Teen Vaccination Surveys</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">Invalid Date</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+</header>
+
+<p>First, I will start by setting an equation for the generalized logistic regression model with all of the predictor variables intended for use.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Path to data. Note the use of the here() package and not absolute paths</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>data_location <span class="ot">&lt;-</span> here<span class="sc">::</span><span class="fu">here</span>(<span class="st">"data"</span>,<span class="st">"processed-data"</span>,<span class="st">"cleandata1.rds"</span>)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co">#load data</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>mydata <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(data_location)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="fu">levels</span>(mydata<span class="sc">$</span>P_UTDHPV)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "NOT UTD"      "UTD"          "Missing Data"</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>mydata2 <span class="ot">&lt;-</span> <span class="fu">droplevels</span>(mydata[<span class="sc">!</span>mydata<span class="sc">$</span>P_UTDHPV <span class="sc">==</span> <span class="st">'Missing Data'</span>, ]) <span class="co"># I will do some brief cleaning and remove all rows with missing values for our response variable, 'P_UTDHPV', to perform a binomial regression</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(mydata2<span class="sc">$</span>P_UTDHPV) <span class="co"># Check for removal of missing values</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code> Factor w/ 2 levels "NOT UTD","UTD": 2 1 2 2 1 2 2 2 2 1 ...</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>fitall <span class="ot">&lt;-</span> <span class="fu">glm</span>(P_UTDHPV <span class="sc">~</span> AGE <span class="sc">+</span> SEX <span class="sc">+</span> STATE <span class="sc">+</span> INS_STAT2_I <span class="sc">+</span> INCQ298A <span class="sc">+</span> INS_BREAK_I <span class="sc">+</span> INCPOV1 <span class="sc">+</span> RACEETHK <span class="sc">+</span> EDUC1 <span class="sc">+</span> LANGUAGE <span class="sc">+</span> MOBIL_1 <span class="sc">+</span> RENT_OWN <span class="sc">+</span> FACILITY, <span class="at">data =</span> mydata2, <span class="at">family =</span> binomial) <span class="co"># define the equation for the binomial logistic regression</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Now, I will set the start of the step-wise comparison, using a model with an intercept only (or blank model).</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>fitstart <span class="ot">&lt;-</span> <span class="fu">glm</span>(P_UTDHPV <span class="sc">~</span> <span class="dv">1</span>, <span class="at">data=</span>mydata2, <span class="at">family =</span> binomial)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Now I will start the step-wise comparison in both the forwards and backwards direction to allow the model to add or drop predictors depending on the responding AIC value.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">step</span>(fitstart, <span class="at">direction =</span> <span class="st">"both"</span>, <span class="at">scope =</span> <span class="fu">list</span>(<span class="at">lower =</span> <span class="sc">~</span><span class="dv">1</span>, <span class="at">upper =</span> <span class="sc">~</span> AGE <span class="sc">+</span> SEX <span class="sc">+</span> STATE <span class="sc">+</span> INS_STAT2_I <span class="sc">+</span> INCQ298A <span class="sc">+</span> INS_BREAK_I <span class="sc">+</span> INCPOV1 <span class="sc">+</span> RACEETHK <span class="sc">+</span> EDUC1 <span class="sc">+</span> LANGUAGE <span class="sc">+</span> MOBIL_1 <span class="sc">+</span> RENT_OWN <span class="sc">+</span> FACILITY), <span class="at">data =</span> mydata, <span class="at">family =</span> binomial) <span class="co"># define the lower and upper limits of the step wise comparison </span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Start:  AIC=16992.68
+P_UTDHPV ~ 1
+
+              Df Deviance   AIC
++ STATE       51    16598 16702
++ FACILITY     5    16763 16775
++ EDUC1        3    16924 16932
++ LANGUAGE     2    16933 16939
++ RACEETHK     3    16934 16942
++ AGE          1    16941 16945
++ INS_BREAK_I  3    16941 16949
++ INCPOV1      3    16954 16962
++ INS_STAT2_I  3    16954 16962
++ SEX          1    16967 16971
++ INCQ298A    13    16946 16974
++ MOBIL_1      1    16980 16984
+&lt;none&gt;              16991 16993
++ RENT_OWN     4    16985 16995
+
+Step:  AIC=16701.87
+P_UTDHPV ~ STATE
+
+              Df Deviance   AIC
++ FACILITY     5    16360 16474
++ EDUC1        3    16546 16656
++ AGE          1    16550 16656
++ RACEETHK     3    16547 16657
++ LANGUAGE     2    16566 16674
++ INS_BREAK_I  3    16565 16675
++ INCPOV1      3    16568 16678
++ SEX          1    16574 16680
++ INS_STAT2_I  3    16575 16685
++ INCQ298A    13    16562 16692
++ MOBIL_1      1    16591 16697
+&lt;none&gt;              16598 16702
++ RENT_OWN     4    16591 16703
+- STATE       51    16991 16993
+
+Step:  AIC=16474.23
+P_UTDHPV ~ STATE + FACILITY
+
+              Df Deviance   AIC
++ RACEETHK     3    16299 16419
++ AGE          1    16310 16426
++ EDUC1        3    16309 16429
++ LANGUAGE     2    16319 16437
++ INCPOV1      3    16326 16446
++ INS_BREAK_I  3    16331 16451
++ SEX          1    16340 16456
++ INCQ298A    13    16318 16458
++ INS_STAT2_I  3    16339 16459
++ RENT_OWN     4    16350 16472
++ MOBIL_1      1    16357 16473
+&lt;none&gt;              16360 16474
+- FACILITY     5    16598 16702
+- STATE       51    16763 16775
+
+Step:  AIC=16419.23
+P_UTDHPV ~ STATE + FACILITY + RACEETHK
+
+              Df Deviance   AIC
++ AGE          1    16247 16369
++ EDUC1        3    16247 16373
++ INS_BREAK_I  3    16266 16392
++ INCPOV1      3    16271 16397
++ LANGUAGE     2    16275 16399
++ SEX          1    16279 16401
++ INS_STAT2_I  3    16283 16409
++ INCQ298A    13    16263 16409
++ MOBIL_1      1    16295 16417
+&lt;none&gt;              16299 16419
++ RENT_OWN     4    16293 16421
+- RACEETHK     3    16360 16474
+- FACILITY     5    16547 16657
+- STATE       51    16689 16707
+
+Step:  AIC=16368.91
+P_UTDHPV ~ STATE + FACILITY + RACEETHK + AGE
+
+              Df Deviance   AIC
++ EDUC1        3    16194 16322
++ INS_BREAK_I  3    16214 16342
++ INCPOV1      3    16218 16346
++ LANGUAGE     2    16223 16349
++ SEX          1    16227 16351
++ INS_STAT2_I  3    16230 16358
++ INCQ298A    13    16211 16359
++ MOBIL_1      1    16243 16367
+&lt;none&gt;              16247 16369
++ RENT_OWN     4    16241 16371
+- AGE          1    16299 16419
+- RACEETHK     3    16310 16426
+- FACILITY     5    16498 16610
+- STATE       51    16635 16655
+
+Step:  AIC=16322.01
+P_UTDHPV ~ STATE + FACILITY + RACEETHK + AGE + EDUC1
+
+              Df Deviance   AIC
++ INS_BREAK_I  3    16162 16296
++ INCPOV1      3    16166 16300
++ INS_STAT2_I  3    16170 16304
++ SEX          1    16174 16304
++ LANGUAGE     2    16176 16308
++ INCQ298A    13    16158 16312
++ MOBIL_1      1    16188 16318
+&lt;none&gt;              16194 16322
++ RENT_OWN     4    16186 16322
+- EDUC1        3    16247 16369
+- AGE          1    16247 16373
+- RACEETHK     3    16258 16380
+- FACILITY     5    16440 16558
+- STATE       51    16570 16596
+
+Step:  AIC=16295.99
+P_UTDHPV ~ STATE + FACILITY + RACEETHK + AGE + EDUC1 + INS_BREAK_I
+
+              Df Deviance   AIC
++ INCPOV1      3    16135 16275
++ LANGUAGE     2    16139 16277
++ SEX          1    16143 16279
++ INCQ298A    13    16127 16287
++ INS_STAT2_I  2    16152 16290
++ MOBIL_1      1    16158 16294
+&lt;none&gt;              16162 16296
++ RENT_OWN     4    16154 16296
+- INS_BREAK_I  3    16194 16322
+- EDUC1        3    16214 16342
+- AGE          1    16215 16347
+- RACEETHK     3    16229 16357
+- FACILITY     5    16405 16529
+- STATE       51    16523 16555
+
+Step:  AIC=16274.89
+P_UTDHPV ~ STATE + FACILITY + RACEETHK + AGE + EDUC1 + INS_BREAK_I + 
+    INCPOV1
+
+              Df Deviance   AIC
++ SEX          1    16115 16257
++ LANGUAGE     2    16116 16260
++ MOBIL_1      1    16130 16272
++ INS_STAT2_I  2    16130 16274
+&lt;none&gt;              16135 16275
++ RENT_OWN     4    16128 16276
++ INCQ298A    12    16124 16288
+- INCPOV1      3    16162 16296
+- INS_BREAK_I  3    16166 16300
+- EDUC1        3    16186 16320
+- AGE          1    16189 16327
+- RACEETHK     3    16193 16327
+- FACILITY     5    16380 16510
+- STATE       51    16494 16532
+
+Step:  AIC=16256.99
+P_UTDHPV ~ STATE + FACILITY + RACEETHK + AGE + EDUC1 + INS_BREAK_I + 
+    INCPOV1 + SEX
+
+              Df Deviance   AIC
++ LANGUAGE     2    16096 16242
++ MOBIL_1      1    16110 16254
++ INS_STAT2_I  2    16111 16257
+&lt;none&gt;              16115 16257
++ RENT_OWN     4    16108 16258
++ INCQ298A    12    16103 16269
+- SEX          1    16135 16275
+- INCPOV1      3    16143 16279
+- INS_BREAK_I  3    16146 16282
+- EDUC1        3    16166 16302
+- RACEETHK     3    16173 16309
+- AGE          1    16169 16309
+- FACILITY     5    16357 16489
+- STATE       51    16474 16514
+
+Step:  AIC=16241.95
+P_UTDHPV ~ STATE + FACILITY + RACEETHK + AGE + EDUC1 + INS_BREAK_I + 
+    INCPOV1 + SEX + LANGUAGE
+
+              Df Deviance   AIC
++ MOBIL_1      1    16090 16238
++ INS_STAT2_I  2    16092 16242
+&lt;none&gt;              16096 16242
++ RENT_OWN     4    16089 16243
++ INCQ298A    12    16085 16255
+- LANGUAGE     2    16115 16257
+- SEX          1    16116 16260
+- INCPOV1      3    16120 16260
+- INS_BREAK_I  3    16131 16271
+- EDUC1        3    16140 16280
+- RACEETHK     3    16144 16284
+- AGE          1    16149 16293
+- FACILITY     5    16341 16477
+- STATE       51    16446 16490
+
+Step:  AIC=16237.81
+P_UTDHPV ~ STATE + FACILITY + RACEETHK + AGE + EDUC1 + INS_BREAK_I + 
+    INCPOV1 + SEX + LANGUAGE + MOBIL_1
+
+              Df Deviance   AIC
++ INS_STAT2_I  2    16085 16237
+&lt;none&gt;              16090 16238
++ RENT_OWN     4    16083 16239
+- MOBIL_1      1    16096 16242
++ INCQ298A    12    16079 16251
+- LANGUAGE     2    16110 16254
+- SEX          1    16110 16256
+- INCPOV1      3    16114 16256
+- INS_BREAK_I  3    16123 16265
+- EDUC1        3    16135 16277
+- RACEETHK     3    16139 16281
+- AGE          1    16143 16289
+- FACILITY     5    16330 16468
+- STATE       51    16440 16486
+
+Step:  AIC=16237.37
+P_UTDHPV ~ STATE + FACILITY + RACEETHK + AGE + EDUC1 + INS_BREAK_I + 
+    INCPOV1 + SEX + LANGUAGE + MOBIL_1 + INS_STAT2_I
+
+              Df Deviance   AIC
+&lt;none&gt;              16085 16237
+- INS_STAT2_I  2    16090 16238
++ RENT_OWN     4    16079 16239
+- MOBIL_1      1    16092 16242
+- INS_BREAK_I  2    16102 16250
++ INCQ298A    12    16076 16252
+- INCPOV1      3    16106 16252
+- LANGUAGE     2    16106 16254
+- SEX          1    16105 16255
+- RACEETHK     3    16131 16277
+- EDUC1        3    16134 16280
+- AGE          1    16140 16290
+- FACILITY     5    16325 16467
+- STATE       51    16434 16484</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:  glm(formula = P_UTDHPV ~ STATE + FACILITY + RACEETHK + AGE + 
+    EDUC1 + INS_BREAK_I + INCPOV1 + SEX + LANGUAGE + MOBIL_1 + 
+    INS_STAT2_I, family = binomial, data = mydata2)
+
+Coefficients:
+                                                                                         (Intercept)  
+                                                                                           -1.083447  
+                                                                                       STATEDELAWARE  
+                                                                                            0.690124  
+                                                                           STATEDISTRICT OF COLUMBIA  
+                                                                                            0.811445  
+                                                                                        STATEFLORIDA  
+                                                                                            0.041041  
+                                                                                        STATEGEORGIA  
+                                                                                           -0.130325  
+                                                                                         STATEHAWAII  
+                                                                                            0.909161  
+                                                                                          STATEIDAHO  
+                                                                                            0.308411  
+                                                                                       STATEILLINOIS  
+                                                                                            0.506572  
+                                                                                        STATEINDIANA  
+                                                                                            0.409233  
+                                                                                           STATEIOWA  
+                                                                                            1.068993  
+                                                                                         STATEALASKA  
+                                                                                            0.202550  
+                                                                                         STATEKANSAS  
+                                                                                            0.079832  
+                                                                                       STATEKENTUCKY  
+                                                                                           -0.140766  
+                                                                                      STATELOUISIANA  
+                                                                                            0.417704  
+                                                                                          STATEMAINE  
+                                                                                            0.383877  
+                                                                                       STATEMARYLAND  
+                                                                                            0.662883  
+                                                                                  STATEMASSACHUSETTS  
+                                                                                            0.820131  
+                                                                                       STATEMICHIGAN  
+                                                                                            0.230557  
+                                                                                      STATEMINNESOTA  
+                                                                                            0.823470  
+                                                                                    STATEMISSISSIPPI  
+                                                                                           -0.736890  
+                                                                                       STATEMISSOURI  
+                                                                                            0.106411  
+                                                                                        STATEMONTANA  
+                                                                                            0.566657  
+                                                                                       STATENEBRASKA  
+                                                                                            0.700473  
+                                                                                         STATENEVADA  
+                                                                                            0.025143  
+                                                                                  STATENEW HAMPSHIRE  
+                                                                                            0.837082  
+                                                                                     STATENEW JERSEY  
+                                                                                           -0.120957  
+                                                                                     STATENEW MEXICO  
+                                                                                            0.404237  
+                                                                                       STATENEW YORK  
+                                                                                            0.375118  
+                                                                                 STATENORTH CAROLINA  
+                                                                                            0.144397  
+                                                                                   STATENORTH DAKOTA  
+                                                                                            0.943829  
+                                                                                           STATEOHIO  
+                                                                                            0.402264  
+                                                                                        STATEARIZONA  
+                                                                                            0.117888  
+                                                                                       STATEOKLAHOMA  
+                                                                                           -0.112801  
+                                                                                         STATEOREGON  
+                                                                                            0.534418  
+                                                                                   STATEPENNSYLVANIA  
+                                                                                            0.585114  
+                                                                                   STATERHODE ISLAND  
+                                                                                            1.825172  
+                                                                                 STATESOUTH CAROLINA  
+                                                                                            0.134137  
+                                                                                   STATESOUTH DAKOTA  
+                                                                                            0.590987  
+                                                                                      STATETENNESSEE  
+                                                                                           -0.034295  
+                                                                                          STATETEXAS  
+                                                                                           -0.052549  
+                                                                                           STATEUTAH  
+                                                                                            0.295496  
+                                                                                       STATEARKANSAS  
+                                                                                            0.071086  
+                                                                                        STATEVERMONT  
+                                                                                            1.035907  
+                                                                                       STATEVIRGINIA  
+                                                                                            0.423367  
+                                                                                     STATEWASHINGTON  
+                                                                                            0.457105  
+                                                                                  STATEWEST VIRGINIA  
+                                                                                           -0.012463  
+                                                                                      STATEWISCONSIN  
+                                                                                            0.639353  
+                                                                                        STATEWYOMING  
+                                                                                           -0.034953  
+                                                                                     STATECALIFORNIA  
+                                                                                           -0.018493  
+                                                                                    STATEPUERTO RICO  
+                                                                                            0.027704  
+                                                                                       STATECOLORADO  
+                                                                                            0.498115  
+                                                                                    STATECONNECTICUT  
+                                                                                            0.281013  
+                                                                     FACILITYALL HOSPITAL FACILITIES  
+                                                                                            0.250610  
+                                                                      FACILITYALL PRIVATE FACILITIES  
+                                                                                            0.371384  
+                                             FACILITYALL STD/SCHOOL/TEEN CLINICS OR OTHER FACILITIES  
+                                                                                           -0.997360  
+                                                                                       FACILITYMIXED  
+                                                                                            0.406419  
+                                                                                     FACILITYUNKNOWN  
+                                                                                            0.003156  
+                                                                     RACEETHKNON-HISPANIC WHITE ONLY  
+                                                                                           -0.296767  
+                                                                     RACEETHKNON-HISPANIC BLACK ONLY  
+                                                                                            0.016949  
+                                                          RACEETHKNON-HISPANIC OTHER + MULTIPLE RACE  
+                                                                                            0.019457  
+                                                                                                 AGE  
+                                                                                            0.104194  
+                                                                                       EDUC112 YEARS  
+                                                                                           -0.037971  
+                                                           EDUC1MORE THAN 12 YEARS, NON-COLLEGE GRAD  
+                                                                                           -0.248231  
+                                                                               EDUC1COLLEGE GRADUATE  
+                                                                                            0.097041  
+                                       INS_BREAK_ICURRENTLY INSURED AND NEVER UNINSURED SINCE AGE 11  
+                                                                                            0.317119  
+                               INS_BREAK_ICURRENTLY UNINSURED BUT INSURED AT SOME POINT SINCE AGE 11  
+                                                                                            0.030130  
+                                       INS_BREAK_ICURRENTLY UNINSURED AND NEVER INSURED SINCE AGE 11  
+                                                                                           -0.550974  
+                                                                        INCPOV1ABOVE POVERTY &lt;= $75K  
+                                                                                           -0.099525  
+                                                                                INCPOV1BELOW POVERTY  
+                                                                                            0.206811  
+                                                                                      INCPOV1UNKNOWN  
+                                                                                           -0.156331  
+                                                                                           SEXFEMALE  
+                                                                                            0.175904  
+                                                                                     LANGUAGESPANISH  
+                                                                                            0.667149  
+                                                                                       LANGUAGEOTHER  
+                                                                                            0.024733  
+                                                            MOBIL_1DID NOT MOVE FROM DIFFERENT STATE  
+                                                                                            0.119146  
+                                                                             INS_STAT2_IANY MEDICAID  
+                                                                                            0.120917  
+INS_STAT2_IOTHER INSURANCE (CHIP, IHS, MILITARY, OR OTHER, ALONE OR IN COMB. WITH PRIVATE INSURANCE)  
+                                                                                            0.054244  
+                                                                                INS_STAT2_IUNINSURED  
+                                                                                                  NA  
+
+Degrees of Freedom: 16563 Total (i.e. Null);  16488 Residual
+Null Deviance:      16990 
+Residual Deviance: 16090    AIC: 16240</code></pre>
+</div>
+</div>
+<p>The model chosen includes the predictors STATE, FACILITY, RACEETHK, AGE, EDUC1, INS_BREAK_I, INCPOV1, SEX, LANGUAGE, MOBIL_1, and INS_STAT2_I. Because of the extremely high residual value, I will perform some diagnostics to determine what is the issue. First, I will look at a residual plot to check for non linearity. Next, I will use a VIF analysis to check for multicollinearity. I am suspicious of co linearity as many of these socioeconomic predicts might be inherently related.</p>
+<p>I consulted ChatGPT to ask how to perform a VIF analysis in R and was recommended the packages ‘car’ and ‘carData’ using the vif() function. I will start by opening the libraries necessary.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(car) <span class="co"># to perform VIF analysis</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Loading required package: carData</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(carData)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Next I will produce a residual plot. I asked ChatGPT how to use ggplot to produce a residual plot for a logistic regression function and was given the base code, which I modified to fit my analysis.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># First, I will define the model given to me by the step wise comparison</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>model <span class="ot">&lt;-</span> <span class="fu">glm</span>(P_UTDHPV <span class="sc">~</span> AGE <span class="sc">+</span> SEX <span class="sc">+</span> STATE <span class="sc">+</span> INS_STAT2_I <span class="sc">+</span> INS_BREAK_I <span class="sc">+</span> INCPOV1 <span class="sc">+</span> RACEETHK <span class="sc">+</span> EDUC1 <span class="sc">+</span> LANGUAGE <span class="sc">+</span> MOBIL_1 <span class="sc">+</span> FACILITY, <span class="at">data =</span> mydata2, <span class="at">family =</span> binomial)</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Define function for residual plot of logistic regression</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>residualPlotLogit <span class="ot">&lt;-</span> <span class="cf">function</span>(model) {</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>  fitted_prob <span class="ot">&lt;-</span> <span class="fu">predict</span>(model, <span class="at">type =</span> <span class="st">"response"</span>) <span class="co"># Predicted probabilities</span></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>  residuals <span class="ot">&lt;-</span> <span class="fu">resid</span>(model, <span class="at">type =</span> <span class="st">"response"</span>) <span class="co"># Calculate residuals</span></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>  plot_data <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">fit =</span> fitted_prob, <span class="at">residuals =</span> residuals) <span class="co"># Create data frame</span></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Plot</span></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="at">data =</span> plot_data,</span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>         <span class="fu">aes</span>(<span class="at">x =</span> fit, <span class="at">y =</span> residuals)) <span class="sc">+</span></span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="dv">0</span>, <span class="at">linetype =</span> <span class="st">"dashed"</span>, <span class="at">color =</span> <span class="st">"red"</span>) <span class="sc">+</span></span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a>    <span class="fu">xlab</span>(<span class="st">"Fitted probabilities"</span>) <span class="sc">+</span></span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ylab</span>(<span class="st">"Residuals"</span>) <span class="sc">+</span></span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ggtitle</span>(<span class="st">"Residual Plot of Proposed Stepwise Model"</span>)</span>
+<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a><span class="co"># Create the residual plot</span></span>
+<span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a>residual_plot_logit <span class="ot">&lt;-</span> <span class="fu">residualPlotLogit</span>(fitall)</span>
+<span id="cb13-22"><a href="#cb13-22" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(residual_plot_logit)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="analysis1_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>The residual plot shows clear collinearity that is not represented by the current model. To find the predictors with collinnearity we will use a correlation matrix. This is because the VIF analysis will not run when multicollinearity is too high.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>factor_data <span class="ot">&lt;-</span> <span class="fu">model.matrix</span>(<span class="sc">~</span> STATE <span class="sc">+</span> FACILITY <span class="sc">+</span> RACEETHK <span class="sc">+</span> AGE <span class="sc">+</span> EDUC1 <span class="sc">+</span> INS_BREAK_I <span class="sc">+</span> INCPOV1 <span class="sc">+</span> SEX <span class="sc">+</span> LANGUAGE <span class="sc">+</span> MOBIL_1 <span class="sc">+</span> INS_STAT2_I, <span class="at">data =</span> mydata2)</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Compute correlation matrix</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>correlation_matrix <span class="ot">&lt;-</span> <span class="fu">cor</span>(factor_data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in cor(factor_data): the standard deviation is zero</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Find indices of correlation matrix where values are 1 or 0</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>indices <span class="ot">&lt;-</span> <span class="fu">which</span>(<span class="sc">!</span><span class="fu">is.na</span>(correlation_matrix) <span class="sc">&amp;</span> correlation_matrix <span class="sc">==</span> <span class="dv">1</span> <span class="sc">|</span> correlation_matrix <span class="sc">==</span> <span class="dv">0</span>, <span class="at">arr.ind =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Extract variable names corresponding to these indices</span></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>variable_pairs <span class="ot">&lt;-</span> <span class="fu">rownames</span>(correlation_matrix)[indices[,<span class="dv">1</span>]]</span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>variable_pairs <span class="ot">&lt;-</span> <span class="fu">cbind</span>(variable_pairs, <span class="fu">colnames</span>(correlation_matrix)[indices[,<span class="dv">2</span>]])</span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Print variable pairs with correlation values of 1 or 0</span></span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(variable_pairs)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>      variable_pairs                                                                                        
+ [1,] "(Intercept)"                                                                                         
+ [2,] "STATEDELAWARE"                                                                                       
+ [3,] "STATEDISTRICT OF COLUMBIA"                                                                           
+ [4,] "STATEFLORIDA"                                                                                        
+ [5,] "STATEGEORGIA"                                                                                        
+ [6,] "STATEHAWAII"                                                                                         
+ [7,] "STATEIDAHO"                                                                                          
+ [8,] "STATEILLINOIS"                                                                                       
+ [9,] "STATEINDIANA"                                                                                        
+[10,] "STATEIOWA"                                                                                           
+[11,] "STATEALASKA"                                                                                         
+[12,] "STATEKANSAS"                                                                                         
+[13,] "STATEKENTUCKY"                                                                                       
+[14,] "STATELOUISIANA"                                                                                      
+[15,] "STATEMAINE"                                                                                          
+[16,] "STATEMARYLAND"                                                                                       
+[17,] "STATEMASSACHUSETTS"                                                                                  
+[18,] "STATEMICHIGAN"                                                                                       
+[19,] "STATEMINNESOTA"                                                                                      
+[20,] "STATEMISSISSIPPI"                                                                                    
+[21,] "STATEMISSOURI"                                                                                       
+[22,] "STATEMONTANA"                                                                                        
+[23,] "STATENEBRASKA"                                                                                       
+[24,] "STATENEVADA"                                                                                         
+[25,] "STATENEW HAMPSHIRE"                                                                                  
+[26,] "STATENEW JERSEY"                                                                                     
+[27,] "STATENEW MEXICO"                                                                                     
+[28,] "STATENEW YORK"                                                                                       
+[29,] "STATENORTH CAROLINA"                                                                                 
+[30,] "STATENORTH DAKOTA"                                                                                   
+[31,] "STATEOHIO"                                                                                           
+[32,] "STATEARIZONA"                                                                                        
+[33,] "STATEOKLAHOMA"                                                                                       
+[34,] "STATEOREGON"                                                                                         
+[35,] "STATEPENNSYLVANIA"                                                                                   
+[36,] "STATERHODE ISLAND"                                                                                   
+[37,] "STATESOUTH CAROLINA"                                                                                 
+[38,] "STATESOUTH DAKOTA"                                                                                   
+[39,] "STATETENNESSEE"                                                                                      
+[40,] "STATETEXAS"                                                                                          
+[41,] "STATEUTAH"                                                                                           
+[42,] "STATEARKANSAS"                                                                                       
+[43,] "STATEVERMONT"                                                                                        
+[44,] "STATEVIRGINIA"                                                                                       
+[45,] "STATEWASHINGTON"                                                                                     
+[46,] "STATEWEST VIRGINIA"                                                                                  
+[47,] "STATEWISCONSIN"                                                                                      
+[48,] "STATEWYOMING"                                                                                        
+[49,] "STATECALIFORNIA"                                                                                     
+[50,] "STATEPUERTO RICO"                                                                                    
+[51,] "STATECOLORADO"                                                                                       
+[52,] "STATECONNECTICUT"                                                                                    
+[53,] "FACILITYALL HOSPITAL FACILITIES"                                                                     
+[54,] "FACILITYALL PRIVATE FACILITIES"                                                                      
+[55,] "FACILITYALL STD/SCHOOL/TEEN CLINICS OR OTHER FACILITIES"                                             
+[56,] "FACILITYMIXED"                                                                                       
+[57,] "FACILITYUNKNOWN"                                                                                     
+[58,] "RACEETHKNON-HISPANIC WHITE ONLY"                                                                     
+[59,] "RACEETHKNON-HISPANIC BLACK ONLY"                                                                     
+[60,] "RACEETHKNON-HISPANIC OTHER + MULTIPLE RACE"                                                          
+[61,] "AGE"                                                                                                 
+[62,] "EDUC112 YEARS"                                                                                       
+[63,] "EDUC1MORE THAN 12 YEARS, NON-COLLEGE GRAD"                                                           
+[64,] "EDUC1COLLEGE GRADUATE"                                                                               
+[65,] "INS_BREAK_ICURRENTLY INSURED AND NEVER UNINSURED SINCE AGE 11"                                       
+[66,] "INS_BREAK_ICURRENTLY UNINSURED BUT INSURED AT SOME POINT SINCE AGE 11"                               
+[67,] "INS_BREAK_ICURRENTLY UNINSURED AND NEVER INSURED SINCE AGE 11"                                       
+[68,] "INCPOV1ABOVE POVERTY &lt;= $75K"                                                                        
+[69,] "INCPOV1BELOW POVERTY"                                                                                
+[70,] "INCPOV1UNKNOWN"                                                                                      
+[71,] "SEXFEMALE"                                                                                           
+[72,] "LANGUAGESPANISH"                                                                                     
+[73,] "LANGUAGEOTHER"                                                                                       
+[74,] "MOBIL_1DID NOT MOVE FROM DIFFERENT STATE"                                                            
+[75,] "INS_STAT2_IANY MEDICAID"                                                                             
+[76,] "INS_STAT2_IOTHER INSURANCE (CHIP, IHS, MILITARY, OR OTHER, ALONE OR IN COMB. WITH PRIVATE INSURANCE)"
+[77,] "INS_STAT2_IUNINSURED"                                                                                
+                                                                                                            
+ [1,] "(Intercept)"                                                                                         
+ [2,] "STATEDELAWARE"                                                                                       
+ [3,] "STATEDISTRICT OF COLUMBIA"                                                                           
+ [4,] "STATEFLORIDA"                                                                                        
+ [5,] "STATEGEORGIA"                                                                                        
+ [6,] "STATEHAWAII"                                                                                         
+ [7,] "STATEIDAHO"                                                                                          
+ [8,] "STATEILLINOIS"                                                                                       
+ [9,] "STATEINDIANA"                                                                                        
+[10,] "STATEIOWA"                                                                                           
+[11,] "STATEALASKA"                                                                                         
+[12,] "STATEKANSAS"                                                                                         
+[13,] "STATEKENTUCKY"                                                                                       
+[14,] "STATELOUISIANA"                                                                                      
+[15,] "STATEMAINE"                                                                                          
+[16,] "STATEMARYLAND"                                                                                       
+[17,] "STATEMASSACHUSETTS"                                                                                  
+[18,] "STATEMICHIGAN"                                                                                       
+[19,] "STATEMINNESOTA"                                                                                      
+[20,] "STATEMISSISSIPPI"                                                                                    
+[21,] "STATEMISSOURI"                                                                                       
+[22,] "STATEMONTANA"                                                                                        
+[23,] "STATENEBRASKA"                                                                                       
+[24,] "STATENEVADA"                                                                                         
+[25,] "STATENEW HAMPSHIRE"                                                                                  
+[26,] "STATENEW JERSEY"                                                                                     
+[27,] "STATENEW MEXICO"                                                                                     
+[28,] "STATENEW YORK"                                                                                       
+[29,] "STATENORTH CAROLINA"                                                                                 
+[30,] "STATENORTH DAKOTA"                                                                                   
+[31,] "STATEOHIO"                                                                                           
+[32,] "STATEARIZONA"                                                                                        
+[33,] "STATEOKLAHOMA"                                                                                       
+[34,] "STATEOREGON"                                                                                         
+[35,] "STATEPENNSYLVANIA"                                                                                   
+[36,] "STATERHODE ISLAND"                                                                                   
+[37,] "STATESOUTH CAROLINA"                                                                                 
+[38,] "STATESOUTH DAKOTA"                                                                                   
+[39,] "STATETENNESSEE"                                                                                      
+[40,] "STATETEXAS"                                                                                          
+[41,] "STATEUTAH"                                                                                           
+[42,] "STATEARKANSAS"                                                                                       
+[43,] "STATEVERMONT"                                                                                        
+[44,] "STATEVIRGINIA"                                                                                       
+[45,] "STATEWASHINGTON"                                                                                     
+[46,] "STATEWEST VIRGINIA"                                                                                  
+[47,] "STATEWISCONSIN"                                                                                      
+[48,] "STATEWYOMING"                                                                                        
+[49,] "STATECALIFORNIA"                                                                                     
+[50,] "STATEPUERTO RICO"                                                                                    
+[51,] "STATECOLORADO"                                                                                       
+[52,] "STATECONNECTICUT"                                                                                    
+[53,] "FACILITYALL HOSPITAL FACILITIES"                                                                     
+[54,] "FACILITYALL PRIVATE FACILITIES"                                                                      
+[55,] "FACILITYALL STD/SCHOOL/TEEN CLINICS OR OTHER FACILITIES"                                             
+[56,] "FACILITYMIXED"                                                                                       
+[57,] "FACILITYUNKNOWN"                                                                                     
+[58,] "RACEETHKNON-HISPANIC WHITE ONLY"                                                                     
+[59,] "RACEETHKNON-HISPANIC BLACK ONLY"                                                                     
+[60,] "RACEETHKNON-HISPANIC OTHER + MULTIPLE RACE"                                                          
+[61,] "AGE"                                                                                                 
+[62,] "EDUC112 YEARS"                                                                                       
+[63,] "EDUC1MORE THAN 12 YEARS, NON-COLLEGE GRAD"                                                           
+[64,] "EDUC1COLLEGE GRADUATE"                                                                               
+[65,] "INS_BREAK_ICURRENTLY INSURED AND NEVER UNINSURED SINCE AGE 11"                                       
+[66,] "INS_BREAK_ICURRENTLY UNINSURED BUT INSURED AT SOME POINT SINCE AGE 11"                               
+[67,] "INS_BREAK_ICURRENTLY UNINSURED AND NEVER INSURED SINCE AGE 11"                                       
+[68,] "INCPOV1ABOVE POVERTY &lt;= $75K"                                                                        
+[69,] "INCPOV1BELOW POVERTY"                                                                                
+[70,] "INCPOV1UNKNOWN"                                                                                      
+[71,] "SEXFEMALE"                                                                                           
+[72,] "LANGUAGESPANISH"                                                                                     
+[73,] "LANGUAGEOTHER"                                                                                       
+[74,] "MOBIL_1DID NOT MOVE FROM DIFFERENT STATE"                                                            
+[75,] "INS_STAT2_IANY MEDICAID"                                                                             
+[76,] "INS_STAT2_IOTHER INSURANCE (CHIP, IHS, MILITARY, OR OTHER, ALONE OR IN COMB. WITH PRIVATE INSURANCE)"
+[77,] "INS_STAT2_IUNINSURED"                                                                                </code></pre>
+</div>
+</div>
+<p>This shows that many levels from each of the variables show multicollineaity. This might be addressed by using a different model for analysis.</p>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>

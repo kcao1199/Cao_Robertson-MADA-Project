@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.450">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2024-03-16">
+
+<title>Data Analysis and Modelling of Teen Vaccination Surveys</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="analysis2_files/libs/clipboard/clipboard.min.js"></script>
+<script src="analysis2_files/libs/quarto-html/quarto.js"></script>
+<script src="analysis2_files/libs/quarto-html/popper.min.js"></script>
+<script src="analysis2_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="analysis2_files/libs/quarto-html/anchor.min.js"></script>
+<link href="analysis2_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="analysis2_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="analysis2_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="analysis2_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="analysis2_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+
+
+</head>
+
+<body class="fullcontent">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Data Analysis and Modelling of Teen Vaccination Surveys</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">March 16, 2024</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+</header>
+
+<section id="introduction" class="level3">
+<h3 class="anchored" data-anchor-id="introduction">Introduction</h3>
+<p>The previous analysis performed shown on analysis1.qmd found in the same directory, showed collinearity among many of the predictor variables. The following script is an attempt to reduce that issue to prevent problem when performing analyses further downstream.</p>
+<section id="loading-library-and-data-set" class="level4">
+<h4 class="anchored" data-anchor-id="loading-library-and-data-set">Loading library and data set</h4>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load required libraries</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(MASS) <span class="co"># for robust regression</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(caret) <span class="co"># for cross-validation</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(h2o) <span class="co">#For dimension reduction</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>I start with loading the same data set and performing the same functions to clean up the data by removing NAs. We will be looking at the variable P_UTDHPV, which reflects the up-to-date HPV vaccination status of the individual.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load and preprocess data</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>data_location <span class="ot">&lt;-</span> here<span class="sc">::</span><span class="fu">here</span>(<span class="st">"data"</span>,<span class="st">"processed-data"</span>,<span class="st">"cleandata1.rds"</span>)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>mydata <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(data_location)</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Remove rows with missing values for the response variable</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>mydata <span class="ot">&lt;-</span> mydata[<span class="fu">complete.cases</span>(mydata<span class="sc">$</span>P_UTDHPV), ]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+</section>
+<section id="pca-analysis" class="level3">
+<h3 class="anchored" data-anchor-id="pca-analysis">PCA Analysis</h3>
+<p>I then initialize the h2o cluster and converted my data object to a H2oFrame or an h2o object. I then performed PCA using the function <code>h20.prcomp</code> and using the newly converted h20 object as a training frame.</p>
+<p>This is perform in attempt t oindirectly reduce the collinearity in the predictor variables.</p>
+<p>The following lines are based on the resource shown below:</p>
+<p><a href="https://bradleyboehmke.github.io/HOML/pca.html">Link</a></p>
+<blockquote class="blockquote">
+<p>PCA indirectly addresses multicollinearity by transforming the original features into a new set of orthogonal variables, whereas LASSO/Ridge regression directly addresses multicollinearity by penalizing the coefficients of correlated predictors.</p>
+</blockquote>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Initialize and connect to the H2O cluster</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Start an H2O cluster</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="fu">h2o.init</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code> Connection successful!
+
+R is connected to the H2O cluster: 
+    H2O cluster uptime:         1 hours 39 minutes 
+    H2O cluster timezone:       America/New_York 
+    H2O data parsing timezone:  UTC 
+    H2O cluster version:        3.44.0.3 
+    H2O cluster version age:    2 months and 24 days 
+    H2O cluster name:           H2O_started_from_R_16786_sef920 
+    H2O cluster total nodes:    1 
+    H2O cluster total memory:   1.83 GB 
+    H2O cluster total cores:    8 
+    H2O cluster allowed cores:  8 
+    H2O cluster healthy:        TRUE 
+    H2O Connection ip:          localhost 
+    H2O Connection port:        54321 
+    H2O Connection proxy:       NA 
+    H2O Internal Security:      FALSE 
+    R Version:                  R version 4.3.1 (2023-06-16 ucrt) </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert mydata to H2OFrame</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>mydata_h2o <span class="ot">&lt;-</span> <span class="fu">as.h2o</span>(mydata)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+  |                                                                            
+  |                                                                      |   0%
+  |                                                                            
+  |======================================================================| 100%</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Perform PCA using h2o.prcomp</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>pca_model <span class="ot">&lt;-</span> <span class="fu">h2o.prcomp</span>(</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">training_frame =</span> mydata_h2o, </span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">x =</span> <span class="fu">c</span>(<span class="st">"AGE"</span>, <span class="st">"SEX"</span>, <span class="st">"STATE"</span>, </span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>        <span class="st">"INS_STAT2_I"</span>, <span class="st">"INCQ298A"</span>, </span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>        <span class="st">"INS_BREAK_I"</span>, <span class="st">"INCPOV1"</span>, </span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>        <span class="st">"RACEETHK"</span>, <span class="st">"EDUC1"</span>, </span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>        <span class="st">"LANGUAGE"</span>, <span class="st">"MOBIL_1"</span>, </span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>        <span class="st">"RENT_OWN"</span>, <span class="st">"FACILITY"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+  |                                                                            
+  |                                                                      |   0%
+  |                                                                            
+  |======================================================================| 100%</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Viewing the result of the PCA</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(pca_model)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Model Details:
+==============
+
+H2ODimReductionModel: pca
+Model ID:  PCA_model_R_1710569927046_258 
+Importance of components: 
+                             pc1
+Standard deviation     15.130703
+Proportion of Variance  0.979143
+Cumulative Proportion   0.979143
+
+
+H2ODimReductionMetrics: pca
+
+No model metrics available for PCA</code></pre>
+</div>
+</div>
+<p>The PCA results showed one principle component with a high standard deviation and high proportion of variance, showing that the Pc1 captures a large portion (97.9%) of variability in the data.</p>
+<p>The result of having only one principle component further supports the fact that many of the predictor variables are highly collinear. One PC shows that a PCA must reduce the data object to a single dimension. Having a single principal component could be problematic for my analysis, particularly if it leads to the loss of crucial information or structure in my data due to collinearity among the original features.</p>
+<p>Understanding why this occurs and assessing whether it aligns with my expectations and the characteristics of my dataset is essential. I may need to potentially review my data preprocessing methods or explore different feature selection techniques.</p>
+</section>
+<section id="lasso-regression" class="level3">
+<h3 class="anchored" data-anchor-id="lasso-regression">LASSO Regression</h3>
+<p>I first investigate alternative approaches to address collinearity, such as employing regularization methods like LASSO regression. This would ensure that I’m effectively capturing the underlying patterns in my data while mitigating the challenges posed by collinearity.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Use LASSO regression for variable selection and regularization</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>lasso_model <span class="ot">&lt;-</span> <span class="fu">h2o.glm</span>(</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">x =</span> <span class="fu">c</span>(<span class="st">"AGE"</span>, <span class="st">"SEX"</span>, <span class="st">"STATE"</span>,</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>        <span class="st">"INS_STAT2_I"</span>, <span class="st">"INCQ298A"</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>        , <span class="st">"INS_BREAK_I"</span>, <span class="st">"INCPOV1"</span>,</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>        <span class="st">"RACEETHK"</span>, <span class="st">"EDUC1"</span>,</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>        <span class="st">"LANGUAGE"</span>, <span class="st">"MOBIL_1"</span>,</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>        <span class="st">"RENT_OWN"</span>, <span class="st">"FACILITY"</span>),</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">y =</span> <span class="st">"P_UTDHPV"</span>, <span class="at">training_frame =</span> mydata_h2o, <span class="at">family =</span> <span class="st">"binomial"</span>, <span class="at">alpha =</span> <span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+  |                                                                            
+  |                                                                      |   0%
+  |                                                                            
+  |======================================================================| 100%</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># View Lasso Model</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(lasso_model)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Model Details:
+==============
+
+H2OBinomialModel: glm
+Model ID:  GLM_model_R_1710569927046_259 
+GLM Model: summary
+    family  link             regularization number_of_predictors_total
+1 binomial logit Lasso (lambda = 2.219E-5 )                        105
+  number_of_active_predictors number_of_iterations    training_frame
+1                          97                    3 mydata_sid_a6f8_1
+
+Coefficients: glm coefficients
+           names coefficients standardized_coefficients
+1      Intercept    -0.517381                  1.031182
+2  STATE.ALABAMA    -0.317948                 -0.317948
+3   STATE.ALASKA    -0.111378                 -0.111378
+4  STATE.ARIZONA    -0.197216                 -0.197216
+5 STATE.ARKANSAS    -0.239825                 -0.239825
+
+---
+                                        names coefficients
+101                          LANGUAGE.SPANISH     0.570828
+102 MOBIL_1.DID NOT MOVE FROM DIFFERENT STATE     0.062400
+103        MOBIL_1.MOVED FROM DIFFERENT STATE    -0.055497
+104                                SEX.FEMALE     0.090807
+105                                  SEX.MALE    -0.084107
+106                                       AGE     0.103459
+    standardized_coefficients
+101                  0.570828
+102                  0.062400
+103                 -0.055497
+104                  0.090807
+105                 -0.084107
+106                  0.144886
+
+H2OBinomialMetrics: glm
+** Reported on training data. **
+
+MSE:  0.1558815
+RMSE:  0.3948183
+LogLoss:  0.4850906
+Mean Per-Class Error:  0.4906615
+AUC:  0.6596287
+AUCPR:  0.8704217
+Gini:  0.3192575
+R^2:  0.05771195
+Residual Deviance:  16070.08
+AIC:  16266.08
+
+Confusion Matrix (vertical: actual; across: predicted) for F1-optimal threshold:
+        NOT UTD   UTD    Error         Rate
+NOT UTD      79  3386 0.977201   =3386/3465
+UTD          54 13045 0.004122    =54/13099
+Totals      133 16431 0.207679  =3440/16564
+
+Maximum Metrics: Maximum metrics at their respective thresholds
+                        metric threshold        value idx
+1                       max f1  0.452609     0.883508 367
+2                       max f2  0.205195     0.949753 399
+3                 max f0point5  0.679887     0.835986 269
+4                 max accuracy  0.452609     0.792321 367
+5                max precision  0.987363     1.000000   0
+6                   max recall  0.205195     1.000000 399
+7              max specificity  0.987363     1.000000   0
+8             max absolute_mcc  0.739273     0.195775 217
+9   max min_per_class_accuracy  0.793646     0.612698 159
+10 max mean_per_class_accuracy  0.791195     0.614143 162
+11                     max tns  0.987363  3465.000000   0
+12                     max fns  0.987363 13097.000000   0
+13                     max fps  0.216370  3465.000000 398
+14                     max tps  0.205195 13099.000000 399
+15                     max tnr  0.987363     1.000000   0
+16                     max fnr  0.987363     0.999847   0
+17                     max fpr  0.216370     1.000000 398
+18                     max tpr  0.205195     1.000000 399
+
+Gains/Lift Table: Extract with `h2o.gainsLift(&lt;model&gt;, &lt;data&gt;)` or `h2o.gainsLift(&lt;model&gt;, valid=&lt;T/F&gt;, xval=&lt;T/F&gt;)`</code></pre>
+</div>
+</div>
+<p>The model used Lasso to pick out 97 important predictors from 105, which likely dealt with issues of collinearity among the original features. This simplification helped in making the model easier to understand and potentially improved its performance.</p>
+</section>
+<section id="attempt-at-cross-validation" class="level3">
+<h3 class="anchored" data-anchor-id="attempt-at-cross-validation">Attempt at Cross-validation</h3>
+<p>I then utilized ChatGPT to write me a code to perform a cross-validation test.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a fold column for cross-validation</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>fold_column <span class="ot">&lt;-</span> <span class="fu">h2o.kfold_column</span>(<span class="at">data =</span> mydata_h2o, <span class="at">nfolds =</span> <span class="dv">10</span>, <span class="at">seed =</span> <span class="dv">1</span>)  <span class="co"># Specify the number of folds and a seed for reproducibility</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Add the fold column to the H2OFrame</span></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>mydata_h2o <span class="ot">&lt;-</span> <span class="fu">h2o.cbind</span>(mydata_h2o, fold_column)</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Specify predictor variables</span></span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>predictor_columns <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"AGE"</span>, <span class="st">"SEX"</span>, <span class="st">"STATE"</span>, <span class="st">"INS_STAT2_I"</span>, <span class="st">"INCQ298A"</span>, <span class="st">"INS_BREAK_I"</span>, </span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>                       <span class="st">"INCPOV1"</span>, <span class="st">"RACEETHK"</span>, <span class="st">"EDUC1"</span>, <span class="st">"LANGUAGE"</span>, <span class="st">"MOBIL_1"</span>, <span class="st">"RENT_OWN"</span>, <span class="st">"FACILITY"</span>)</span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Evaluate model performance using cross-validation</span></span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>cv_metrics <span class="ot">&lt;-</span> <span class="fu">h2o.glm</span>(<span class="at">x =</span> predictor_columns, </span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>                      <span class="at">y =</span> <span class="st">"P_UTDHPV"</span>, </span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a>                      <span class="at">training_frame =</span> mydata_h2o, </span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a>                      <span class="at">fold_column =</span> <span class="st">"C1"</span>,  <span class="co"># Use the name of the fold column (default name is "C1")</span></span>
+<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a>                      <span class="at">family =</span> <span class="st">"binomial"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+  |                                                                            
+  |                                                                      |   0%
+  |                                                                            
+  |======================================================================| 100%</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Display results</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(cv_metrics)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Model Details:
+==============
+
+H2OBinomialModel: glm
+Model ID:  GLM_model_R_1710569927046_261 
+GLM Model: summary
+    family  link                                regularization
+1 binomial logit Elastic Net (alpha = 0.5, lambda = 4.438E-5 )
+  number_of_predictors_total number_of_active_predictors number_of_iterations
+1                        105                          97                    3
+   training_frame
+1 RTMP_sid_a6f8_4
+
+Coefficients: glm coefficients
+           names coefficients standardized_coefficients
+1      Intercept    -0.429856                  1.118149
+2  STATE.ALABAMA    -0.323650                 -0.323650
+3   STATE.ALASKA    -0.119125                 -0.119125
+4  STATE.ARIZONA    -0.203766                 -0.203766
+5 STATE.ARKANSAS    -0.246700                 -0.246700
+
+---
+                                        names coefficients
+101                          LANGUAGE.SPANISH     0.539653
+102 MOBIL_1.DID NOT MOVE FROM DIFFERENT STATE     0.061309
+103        MOBIL_1.MOVED FROM DIFFERENT STATE    -0.056536
+104                                SEX.FEMALE     0.089713
+105                                  SEX.MALE    -0.085126
+106                                       AGE     0.103422
+    standardized_coefficients
+101                  0.539653
+102                  0.061309
+103                 -0.056536
+104                  0.089713
+105                 -0.085126
+106                  0.144834
+
+H2OBinomialMetrics: glm
+** Reported on training data. **
+
+MSE:  0.1558844
+RMSE:  0.394822
+LogLoss:  0.4850994
+Mean Per-Class Error:  0.4905172
+AUC:  0.6596634
+AUCPR:  0.8704377
+Gini:  0.3193268
+R^2:  0.05769444
+Residual Deviance:  16070.37
+AIC:  16266.37
+
+Confusion Matrix (vertical: actual; across: predicted) for F1-optimal threshold:
+        NOT UTD   UTD    Error         Rate
+NOT UTD      80  3385 0.976912   =3385/3465
+UTD          54 13045 0.004122    =54/13099
+Totals      134 16430 0.207619  =3439/16564
+
+Maximum Metrics: Maximum metrics at their respective thresholds
+                        metric threshold        value idx
+1                       max f1  0.454485     0.883538 367
+2                       max f2  0.207186     0.949753 399
+3                 max f0point5  0.680243     0.835963 270
+4                 max accuracy  0.454485     0.792381 367
+5                max precision  0.986806     1.000000   0
+6                   max recall  0.207186     1.000000 399
+7              max specificity  0.986806     1.000000   0
+8             max absolute_mcc  0.738832     0.195412 220
+9   max min_per_class_accuracy  0.793670     0.612413 162
+10 max mean_per_class_accuracy  0.790326     0.613777 166
+11                     max tns  0.986806  3465.000000   0
+12                     max fns  0.986806 13097.000000   0
+13                     max fps  0.218511  3465.000000 398
+14                     max tps  0.207186 13099.000000 399
+15                     max tnr  0.986806     1.000000   0
+16                     max fnr  0.986806     0.999847   0
+17                     max fpr  0.218511     1.000000 398
+18                     max tpr  0.207186     1.000000 399
+
+Gains/Lift Table: Extract with `h2o.gainsLift(&lt;model&gt;, &lt;data&gt;)` or `h2o.gainsLift(&lt;model&gt;, valid=&lt;T/F&gt;, xval=&lt;T/F&gt;)`
+
+H2OBinomialMetrics: glm
+** Reported on cross-validation data. **
+** 10-fold cross-validation on training data (Metrics computed for combined holdout predictions) **
+
+MSE:  0.1576565
+RMSE:  0.3970599
+LogLoss:  0.4903955
+Mean Per-Class Error:  0.4982554
+AUC:  0.6440251
+AUCPR:  0.8625465
+Gini:  0.2880502
+R^2:  0.04698217
+Residual Deviance:  16245.82
+AIC:  16435.82
+
+Confusion Matrix (vertical: actual; across: predicted) for F1-optimal threshold:
+        NOT UTD   UTD    Error         Rate
+NOT UTD      15  3450 0.995671   =3450/3465
+UTD          11 13088 0.000840    =11/13099
+Totals       26 16538 0.208947  =3461/16564
+
+Maximum Metrics: Maximum metrics at their respective thresholds
+                        metric threshold        value idx
+1                       max f1  0.360738     0.883220 387
+2                       max f2  0.202252     0.949753 399
+3                 max f0point5  0.676418     0.833668 273
+4                 max accuracy  0.439607     0.791475 371
+5                max precision  0.985467     1.000000   0
+6                   max recall  0.202252     1.000000 399
+7              max specificity  0.985467     1.000000   0
+8             max absolute_mcc  0.694339     0.174415 259
+9   max min_per_class_accuracy  0.796304     0.598977 160
+10 max mean_per_class_accuracy  0.776571     0.601790 182
+11                     max tns  0.985467  3465.000000   0
+12                     max fns  0.985467 13096.000000   0
+13                     max fps  0.223090  3465.000000 398
+14                     max tps  0.202252 13099.000000 399
+15                     max tnr  0.985467     1.000000   0
+16                     max fnr  0.985467     0.999771   0
+17                     max fpr  0.223090     1.000000 398
+18                     max tpr  0.202252     1.000000 399
+
+Gains/Lift Table: Extract with `h2o.gainsLift(&lt;model&gt;, &lt;data&gt;)` or `h2o.gainsLift(&lt;model&gt;, valid=&lt;T/F&gt;, xval=&lt;T/F&gt;)`
+Cross-Validation Metrics Summary: 
+                mean        sd cv_1_valid cv_2_valid cv_3_valid cv_4_valid
+accuracy    0.794013  0.005924   0.807295   0.788462   0.795053   0.795882
+auc         0.644411  0.022986   0.692150   0.643446   0.604032   0.647431
+err         0.205987  0.005924   0.192705   0.211538   0.204947   0.204118
+err_count 341.200000 12.236557 317.000000 352.000000 348.000000 347.000000
+f0point5    0.828705  0.006457   0.844987   0.822960   0.828930   0.829756
+          cv_5_valid cv_6_valid cv_7_valid cv_8_valid cv_9_valid cv_10_valid
+accuracy    0.791872   0.790409   0.798795   0.787897   0.795384    0.789082
+auc         0.646855   0.631620   0.663733   0.636095   0.630077    0.648674
+err         0.208128   0.209591   0.201205   0.212103   0.204616    0.210918
+err_count 338.000000 354.000000 334.000000 354.000000 328.000000  340.000000
+f0point5    0.826266   0.825968   0.831437   0.822245   0.829387    0.825115
+
+---
+                         mean        sd  cv_1_valid  cv_2_valid  cv_3_valid
+precision            0.795357  0.008501    0.817486    0.788079    0.794932
+r2                   0.047050  0.018138    0.083637    0.047905    0.012435
+recall               0.995926  0.007388    0.976372    1.000000    1.000000
+residual_deviance 1624.582400 52.135494 1529.577300 1647.413200 1703.149000
+rmse                 0.397020  0.005331    0.384642    0.399734    0.401572
+specificity          0.031137  0.042365    0.141141    0.008451    0.002865
+                   cv_4_valid  cv_5_valid  cv_6_valid  cv_7_valid  cv_8_valid
+precision            0.795882    0.791872    0.792239    0.797937    0.787260
+r2                   0.043398    0.048105    0.035891    0.061928    0.047384
+recall               1.000000    1.000000    0.995499    0.999240    1.000000
+residual_deviance 1650.806000 1590.925800 1677.772100 1594.329300 1661.377900
+rmse                 0.394212    0.396084    0.400473    0.392570    0.401038
+specificity          0.000000    0.000000    0.022472    0.031977    0.013928
+                   cv_9_valid cv_10_valid
+precision            0.796086    0.791798
+r2                   0.039727    0.050086
+recall               0.996051    0.992095
+residual_deviance 1588.096900 1602.376200
+rmse                 0.399297    0.400578
+specificity          0.041543    0.048991</code></pre>
+</div>
+</div>
+<p>The cross-validation results for the logistic regression model show consistent performance across folds, with an average accuracy of approximately 79.4%. The model demonstrates stability with metrics such as an area under the curve (AUC) around 0.644 and a mean per-class error of about 49.8%. Precision and recall metrics also exhibit robustness, averaging around 79.6% and 99.6%, respectively. These results indicate the model’s ability to balance correctly identifying positive cases while minimizing false positives. However, areas for model refinement include residual deviance and specificity.</p>
+</section>
+<section id="conclusion" class="level3">
+<h3 class="anchored" data-anchor-id="conclusion">Conclusion</h3>
+<p>our analysis aimed to address collinearity issues in our teen vaccination surveys dataset through dimension reduction techniques like PCA and regularization methods such as LASSO regression. LASSO regression effectively selected important predictors while simplifying the model. Subsequent cross-validation demonstrated consistent model performance, with an average accuracy of 79.4% and robust precision and recall metrics.</p>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>

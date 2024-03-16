@@ -15,6 +15,7 @@ editor:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(warning = FALSE, message = FALSE)
+library(here)
 ```
 
 # Introduction
@@ -99,7 +100,9 @@ The distribution of the numerical income to poverty ratio can be shown below.
 It displays a value from 1-3.
 A ratio displaying less than 1 depicts an income less than the poverty level.Any income ratio \>1 indicates an income greater than the poverty level.
 Most of the observations were gathered from households with income ratios of 3, as shown by the skewed plot below.
-![Figure 1. Income-poverty ratio distribution](results/figures/income.png)
+
+![Figure 1. Income-poverty ratio distribution](/results/figures/income.png)
+
 
 Nest, the distribution of surveys given per state was analyzed.
 The state variable shows a more uniformed distribution, suggesting that the observations were gathered fairly across the US states and territory.
@@ -111,7 +114,8 @@ The family income variable provides a more normal distribution with the majority
 
 The race and ethnicity variables show a distribution that is similar to the U.S. census data, which concludes that the racial composition of the U.S. is 58.9% white, 13.6% African American, and 19.1% Hispanic or Latino.
 
-![Figure 4.Racial distribution](results/figures/race.distribution.png) ![Figure 5.Ethnicity distribution](results/figures/ethnicity.distribution.png)
+![Figure 4.Racial distribution](results/figures/race.distribution.png) 
+![Figure 5.Ethnicity distribution](results/figures/ethnicity.distribution.png)
 
 The Insurance status variable shows that the majority of the observations came from households with private insurance only.
 This is followed by any medicaid and then other insurance.
@@ -121,7 +125,7 @@ This is mirrored in the facility variable, where a majority of its observations 
 The vaccination variable indicates nearly 80% of the observations had an Up-to-date status for the 1+ shot HPV vaccination.
 We will follow by examining the percentage of up-to-date vaccination status by state.
 
-![Figure 8. Vaccine status distribution](results/figures/State-vaccine-completion.png)
+![Figure 8. Vaccine status distribution](../results/figures/State-vaccine-completion.png)
 
 We examine the facility that submitted the survey, which is stratified by the vaccine completion status of the survey subject.
 

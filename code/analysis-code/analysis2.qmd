@@ -1,0 +1,131 @@
+---
+title: "Data Analysis and Modelling of Teen Vaccination Surveys"
+date: '`r format(Sys.Date())`'
+Author: Kelly Cao and Rachel Robertson
+output: html_document
+editor: 
+  markdown: 
+    wrap: sentence
+  
+---
+### Introduction
+The previous analysis performed shown on analysis1.qmd found in the same directory, showed collinearity among many of the predictor variables. The following script is an attempt to reduce that issue to prevent problem when performing analyses further downstream. 
+
+```{r setup, include=FALSE} 
+knitr::opts_chunk$set(warning = FALSE, message = FALSE) 
+```
+
+
+#### Loading library and data set
+``` {R}
+# Load required libraries
+library(MASS) # for robust regression
+library(caret) # for cross-validation
+library(h2o) #For dimension reduction
+library(dplyr) 
+
+```
+
+I start with loading the same data set and performing the same functions to clean up the data by removing NAs. We will be looking at the variable P_UTDHPV, which reflects the up-to-date HPV vaccination status of the individual.
+```{R}
+# Load and preprocess data
+data_location <- here::here("data","processed-data","cleandata1.rds")
+mydata <- readRDS(data_location)
+
+# Remove rows with missing values for the response variable
+mydata <- mydata[complete.cases(mydata$P_UTDHPV), ]
+
+```
+
+
+### PCA Analysis
+I then initialize the h2o cluster and converted my data object to a H2oFrame or an h2o object. I then performed PCA using the function `h20.prcomp` and using the newly converted h20 object as a training frame. 
+
+This is perform in attempt t oindirectly reduce the collinearity in the predictor variables.
+
+The following lines are based on the resource shown below:
+
+[Link](https://bradleyboehmke.github.io/HOML/pca.html)
+
+>PCA indirectly addresses multicollinearity by transforming the original features into a new set of orthogonal variables, whereas LASSO/Ridge regression directly addresses multicollinearity by penalizing the coefficients of correlated predictors.
+
+```{R}
+# Initialize and connect to the H2O cluster
+# Start an H2O cluster
+h2o.init()
+
+# Convert mydata to H2OFrame
+mydata_h2o <- as.h2o(mydata)
+
+# Perform PCA using h2o.prcomp
+pca_model <- h2o.prcomp(
+  training_frame = mydata_h2o, 
+  x = c("AGE", "SEX", "STATE", 
+        "INS_STAT2_I", "INCQ298A", 
+        "INS_BREAK_I", "INCPOV1", 
+        "RACEETHK", "EDUC1", 
+        "LANGUAGE", "MOBIL_1", 
+        "RENT_OWN", "FACILITY"))
+
+# Viewing the result of the PCA
+print(pca_model)
+
+```
+
+The PCA results showed one principle component with a high standard deviation and high proportion of variance, showing that the Pc1 captures a large portion (97.9%) of variability in the data. 
+
+The result of having only one principle component further supports the fact that many of the predictor variables are highly collinear. One PC shows that a PCA must reduce the data object to a single dimension. Having a single principal component could be problematic for my analysis, particularly if it leads to the loss of crucial information or structure in my data due to collinearity among the original features. 
+
+Understanding why this occurs and assessing whether it aligns with my expectations and the characteristics of my dataset is essential. I may need to potentially review my data preprocessing methods or explore different feature selection techniques. 
+
+### LASSO Regression
+I first investigate alternative approaches to address collinearity, such as employing regularization methods like LASSO regression. This would ensure that I'm effectively capturing the underlying patterns in my data while mitigating the challenges posed by collinearity.
+
+```{R}
+# Use LASSO regression for variable selection and regularization
+lasso_model <- h2o.glm(
+  x = c("AGE", "SEX", "STATE",
+        "INS_STAT2_I", "INCQ298A"
+        , "INS_BREAK_I", "INCPOV1",
+        "RACEETHK", "EDUC1",
+        "LANGUAGE", "MOBIL_1",
+        "RENT_OWN", "FACILITY"),
+  y = "P_UTDHPV", training_frame = mydata_h2o, family = "binomial", alpha = 1)
+
+# View Lasso Model
+print(lasso_model)
+
+```
+
+The model used Lasso to pick out 97 important predictors from 105, which likely dealt with issues of collinearity among the original features. This simplification helped in making the model easier to understand and potentially improved its performance.
+
+
+### Attempt at Cross-validation
+I then utilized ChatGPT to write me a code to perform a cross-validation test.
+
+```{R}
+# Create a fold column for cross-validation
+fold_column <- h2o.kfold_column(data = mydata_h2o, nfolds = 10, seed = 1)  # Specify the number of folds and a seed for reproducibility
+
+# Add the fold column to the H2OFrame
+mydata_h2o <- h2o.cbind(mydata_h2o, fold_column)
+
+# Specify predictor variables
+predictor_columns <- c("AGE", "SEX", "STATE", "INS_STAT2_I", "INCQ298A", "INS_BREAK_I", 
+                       "INCPOV1", "RACEETHK", "EDUC1", "LANGUAGE", "MOBIL_1", "RENT_OWN", "FACILITY")
+
+# Evaluate model performance using cross-validation
+cv_metrics <- h2o.glm(x = predictor_columns, 
+                      y = "P_UTDHPV", 
+                      training_frame = mydata_h2o, 
+                      fold_column = "C1",  # Use the name of the fold column (default name is "C1")
+                      family = "binomial")
+
+# Display results
+print(cv_metrics)
+```
+
+The cross-validation results for the logistic regression model show consistent performance across folds, with an average accuracy of approximately 79.4%. The model demonstrates stability with metrics such as an area under the curve (AUC) around 0.644 and a mean per-class error of about 49.8%. Precision and recall metrics also exhibit robustness, averaging around 79.6% and 99.6%, respectively. These results indicate the model's ability to balance correctly identifying positive cases while minimizing false positives. However, areas for model refinement include residual deviance and specificity.
+
+### Conclusion
+our analysis aimed to address collinearity issues in our teen vaccination surveys dataset through dimension reduction techniques like PCA and regularization methods such as LASSO regression. LASSO regression effectively selected important predictors while simplifying the model. Subsequent cross-validation demonstrated consistent model performance, with an average accuracy of 79.4% and robust precision and recall metrics. 

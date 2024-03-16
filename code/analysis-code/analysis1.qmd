@@ -1,6 +1,6 @@
 ---
 title: "Data Analysis and Modelling of Teen Vaccination Surveys"
-date: "`r format(Sys.Date()'"
+date: '`r format(Sys.Date())`'
 Author: Kelly Cao and Rachel Robertson
 output: html_document
 editor: 
@@ -8,20 +8,30 @@ editor:
     wrap: sentence
 ---
 First, I will start by setting an equation for the generalized logistic regression model with all of the predictor variables intended for use.
+
+The model aims to predict the vaccination status (P_UTDHPV) based on various predictor variables like age, sex, state, insurance status, income, race/ethnicity, education, language, etc. The response variable P_UTDHPV represents whether a teenager is up-to-date on HPV vaccination.
 ```{r}
+#Path to data. Note the use of the here() package and not absolute paths
+data_location <- here::here("data","processed-data","cleandata1.rds")
+
+#load data
+mydata <- readRDS(data_location)
+
+
 levels(mydata$P_UTDHPV)
 mydata2 <- droplevels(mydata[!mydata$P_UTDHPV == 'Missing Data', ]) # I will do some brief cleaning and remove all rows with missing values for our response variable, 'P_UTDHPV', to perform a binomial regression
 str(mydata2$P_UTDHPV) # Check for removal of missing values
 fitall <- glm(P_UTDHPV ~ AGE + SEX + STATE + INS_STAT2_I + INCQ298A + INS_BREAK_I + INCPOV1 + RACEETHK + EDUC1 + LANGUAGE + MOBIL_1 + RENT_OWN + FACILITY, data = mydata2, family = binomial) # define the equation for the binomial logistic regression
 ```
 
+> A Stepwise model comparison is performed to iteratively add or remove predictor variables based on their significance in improving the model fit. 
 
-Now, I will set the start of the step-wise comparison, using a model with an intercept only (or blank model).
+Now, I will set the start of the step-wise comparison, using a model with an intercept only (or blank model). 
 ```{r}
 fitstart <- glm(P_UTDHPV ~ 1, data=mydata2, family = binomial)
 ```
 
-Now I will start the step-wise comparison in both the forwards and backwards direction to allow the model to add or drop predictors depending on the responding AIC value.
+Now I will start the step-wise comparison in both the forwards and backwards direction to allow the model to add or drop predictors depending on the responding AIC value. This is performed with the `step()` function, setting up the scope for the variables to consider.
 ```{r}
 step(fitstart, direction = "both", scope = list(lower = ~1, upper = ~ AGE + SEX + STATE + INS_STAT2_I + INCQ298A + INS_BREAK_I + INCPOV1 + RACEETHK + EDUC1 + LANGUAGE + MOBIL_1 + RENT_OWN + FACILITY), data = mydata, family = binomial) # define the lower and upper limits of the step wise comparison 
 ```
