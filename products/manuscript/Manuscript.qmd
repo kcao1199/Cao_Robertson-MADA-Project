@@ -19,48 +19,22 @@ library(here)
 ```
 
 # Introduction
+## Background
 
-## Data Set
+Human Papillomavirus (HPV) is a double-stranded DNA virus that infects the cells of the skin and mucosal linings [1]. HPV is the most common sexually transmitted infection (STI) in the United States, where over 90% of sexually active males and 80% of sexually active females will likely become infected within their lifetime [2, 3]. Most cases of HPV are asymptomatic and cleared over time, but certain infections tend to become persistent and can cause genital warts. Specific types of HPV are known to be “high-risk” or increase the likelihood of developing cancer in persistently infected cells [4]. The HPV group contains over 200 related viruses, but only 12 types are considered “high-risk” due to the presence of oncogenes. These include HPV 16, 18, 31, 33, 35, 39, 45, 51, 52, 56, 58, and 59, though HPV-16 and HPV-18 are associated with the highest number of HPV-associated cancer cases. In the U.S., there are 37,300 cases of HPV-associated cancer cases every year, including cases of cervical, anal, oropharyngeal (throat and mouth), vulvar, vaginal, and penile cancers [5,6]. In an effort to prevent HPV-associated cancers worldwide, two HPV vaccines were developed and made available in 2006. These included a bivalent and quadrivalent vaccine that contained viral-like particles (VLPs) of the viral capsid protein (L1) from “high-risk” HPV types [7]. In recent years, the vaccine used in the U.S., Gardasil 9, has been expanded to contain HPV types 6, 11, 16, 18, 31, 33, 45, 52, and 58 [4]. Currently, the United States Centers for Disease Control and Prevention (CDC) recommends a two-dose Gardasil 9 regime to all teenagers, with a primary dose at age 11 to 12 and a second dose within 6 to 12 months of the first [8]. In 2022, the CDC estimated that 76.0% of teenagers aged 13 to 17 had received at least 1 dose of the HPV vaccine while only 62.6% of teenagers were up-to-date with their vaccination regime [9]. 
 
-The data we chose to use is the National Immunization Survey (NIS) of 2022.
-It consists survey data that was collected to monitor vaccination coverage for teenagers age 13-17 in the United States of America.
-The surveys were conducted by the National Center for Immunization and Respiratory Diseases of the Center (NCIRD) for Disease Control and Prevention (CDC).
-The survey itself consists of two parts: (1) the household telephone (random digit dialing) survey answered by a parent or guardian and (2) a mailed survey for the vaccination provider, called “Immunization History Questionnaire.” The original data set is a fixed width file (FWF).
-In the data set, there are 43,738 rows and 672 columns, with each row representing an individual and each column representing the answer to a question.
-The questions pertain to the teenager’s immunization history, demographics, and additional household-reported health information.
-We have truncated the data set to include 26-selected columns for the ease of observation.
-We have also filtered the data set to include one year, 2022, which is the most recent year of data that is published.
-The provided survey data will require cleaning, as there are signs of human errors present.
+## Data
+
+The data we chose to use is the National Immunization Survey (NIS) of 2022. It consists survey data that was collected to monitor vaccination coverage for teenagers age 13-17 in the United States of America. The surveys were conducted by the National Center for Immunization and Respiratory Diseases of the Center (NCIRD) for Disease Control and Prevention (CDC). The survey itself consists of two parts: (1) the household telephone (random digit dialing) survey answered by a parent or guardian and (2) a mailed survey for the vaccination provider, called “Immunization History Questionnaire.” The original data set is a fixed width file (FWF). In the data set, there are 43,738 rows and 672 columns, with each row representing an individual and each column representing the answer to a question. The questions pertain to the teenager’s immunization history, demographics, and additional household-reported health information. We have truncated the data set to include 26-selected columns for the ease of observation. We have also filtered the data set to include one year, 2022, which is the most recent year of data that is published. The provided survey data will require cleaning, as there are signs of human errors present.
 
 ## Research Question
 
-We want to use the 2022 National Immunization Survey for teens to identify which socioeconomic and geographic factors are associated with HPV vaccination completion for teenagers in the U.S.
-Specifically, we are asking the question, What is the likelihood of a teenager being up-to-date for their HPV vaccinations in the U.S., based on socioeconomic factors and geographic distribution.
-The outcome of this study will be measured using the columns that pertain to HPV vaccination completion.
-These variables are provider-collected, and they state whether or not the teen is (1) up-to-date with 1+ HPV shot, (2) up-to-date with 2+ HPV shots, or (3) up-to-date with 3+ HPV shots (excluding all vaccinations post-survey).
-Measuring HPV vaccine completion with “up-to-date” variables may be more robust than vaccination rate based on those who have completed the regime (2 or more shots), because not all teens included in the survey are at the age in which they would’ve completed the full regime.
-This means that younger teens who are up to date with 1+ shot will not be excluded from the analysis.
-We aim to measure determinants of socioeconomic status that are engrained into the survey questions.
-These factors include: family income, poverty status, income-to-poverty ratio, insurance status, insurance breaks, maternal education, living arrangement, and geographic mobility status.
-Additional demographic factors that are associated with healthcare access and may be examined include: race, ethnicity, language, facility in which the vaccine was administered, and whether the teen had completed a wellness exam between the ages of 11-12.
-Geographic distribution of the teens will be assessed by true state of residence.
-We would like to examine the data for correlations between HPV vaccination completion status and the aforementioned socioeconomic determinants, demographics, and geographic location.
-This serves as valuable information to determine differences in healthcare access and vaccination coverage for teenagers living in the U.S.
+Data from the 2022 National Immunization Survey for teens will be used to identify which socioeconomic and geographic factors are associated with HPV vaccination completion for teenagers aged 13 to 17 in the U.S. Specifically, we want to find the most important socioeconomic and geographic factors for a teenager being up-to-date for their HPV vaccinations in the U.S. The outcome of this study will be measured using the overall up-to-date HPV vaccination completion indicator, which includes all age groups in any step of the vaccination process. The variable includes teenagers aged 13 to 17 who are up-to-date and have received at least one HPV shot.
 
-## Proposed Analysis
+## Purpose
 
-For the analysis portion, we have decided to do a correlation analysis between HPV vaccination completion and each of the socioeconomic factors.
-When performing this, we may choose to stratify by age or gender, if we find these to be confounders.
-The correlation analysis cannot be performed using a multivariate model because there may be collinearity present between many of the determinants for socioeconomic status.
-This will lead to spurious results.
-Instead, the correlation between vaccination status and each factor is examined separately.
-Next, we may stratify this by state.
-Comparing these correlation values between states and regions may lead us to find patterns of healthcare accessibility in the U.S.
-It is generally known that those of lower income and without insurance have limited healthcare access in the U.S.(1), but it will be interesting to see if this pattern is reflected at the state level.
-If so, policy should be examined as it may be related to healthcare access disparities.
-Recent studies have examined HPV vaccination completion according to social determinants, but they have not examined geographic distribution and include data prior to 2019 (2).
-More recent years display differences in global HPV vaccination trends due to the COVID19 pandemic (3).
-Our study will fill in geographical gaps and provide updated vaccination trends based on socioeconomic factors.
+Measuring HPV vaccine completion with “up-to-date” variables may be more robust than vaccination rate based on those who have completed the regime (2 or more shots), because not all teens included in the survey are at the age in which they would’ve completed the full regime. This means that younger teens who are up to date with 1+ shot will not be excluded from the analysis. We aim to measure determinants of socioeconomic status that are engrained into the survey questions. These factors include: family income, poverty status, income-to-poverty ratio, insurance status, insurance breaks, maternal education, living arrangement, and geographic mobility status. Additional demographic factors that are associated with healthcare access and may be examined include: race, ethnicity, language, facility in which the vaccine was administered, and whether the teen had completed a wellness exam between the ages of 11-12. Geographic distribution of the teens will be assessed by true state of residence. We would like to examine the data for correlations between HPV vaccination completion status and the aforementioned socioeconomic determinants, demographics, and geographic location. This serves as valuable information to determine differences in healthcare access and vaccination coverage for teenagers living in the U.S.
+It is generally known that those of lower income and without insurance have limited healthcare access in the U.S. [10], but it will be interesting to see if this pattern is reflected at the state level. If so, policy should be examined as it may be related to healthcare access disparities. Recent studies have examined HPV vaccination completion according to social determinants, but they have not examined geographic distribution and include data prior to 2019 [11]. More recent years display differences in global HPV vaccination trends due to the COVID19 pandemic [12]. Our study will fill in geographical gaps and provide updated vaccination trends based on socioeconomic factors.
 
 {{< pagebreak >}}
 
@@ -92,10 +66,7 @@ We saved the cleaned data as an rds and csv in the 'processed-data' folder.
 
 ## Exploratory Analysis
 
-First we loaded the packages needed for the exploratory analysis.
-And then we loaded the data called 'cleandata1' from the 'processed-data' folder.
-
-We start our exploratory analysis by displaying the distribution of our predictors, including the socioeconomic variables that we chose for analysis.
+We use our exploratory analysis to determine the distribution of our predictors, including the socioeconomic variables that we chose for analysis.
 The distribution of the numerical income to poverty ratio can be shown below.
 It displays a value from 1-3.
 A ratio displaying less than 1 depicts an income less than the poverty level.Any income ratio \>1 indicates an income greater than the poverty level.
@@ -179,8 +150,8 @@ There are seven potential outcome variables for HPV vaccine completion:
 The first option, P_UTDHPV was the chosen outcome as it is the most general.
 It has the benefit of being able to use Age as a predictor variable and also not biasing the model towards older ages who are required to receive more than one shot to be considered up-to-date.
 Additionally, in April of 2022, the SAGE work group of the WHO officially recommended a single-dose HPV vaccine regime, because vaccine efficacy was found to be significantly high with a single dose.
-This recommendation was given with the goal of increasing vaccine coverage in areas with lower vaccine accessibility and availability (4).
-In September of 2023, PAHO followed suit in recommending a single-dose HPV vaccine regime for the Americas (5).
+This recommendation was given with the goal of increasing vaccine coverage in areas with lower vaccine accessibility and availability (13).
+In September of 2023, PAHO followed suit in recommending a single-dose HPV vaccine regime for the Americas (14).
        
 The predictor variables we chose to examine are listed below:
 
@@ -197,8 +168,19 @@ To determine which predictor variables will be best suited for a general linear 
 
 # References
 
-1.  Sciences, N. A. of, Engineering, & Medicine, and. (2018, March 1). Factors that affect health-care utilization. Health-Care Utilization as a Proxy in Disability Determination. https://www.ncbi.nlm.nih.gov/books/NBK500097/
-2.  Mansfield, L. N., Chung, R. J., Silva, S. G., Merwin, E. I., & Gonzalez-Guarda, R. M. (2022). Social determinants of human papillomavirus vaccine series completion among U.S. adolescents: A mixed-methods study. SSM - population health, 18, 101082. https://doi.org/10.1016/j.ssmph.2022.101082
-3.  Casey, R. M., Akaba, H., Hyde, T. B, et al. (2024). Covid-19 pandemic and equity of global human papillomavirus vaccination: descriptive study of World Health Organization-Unicef vaccination coverage estimates. BMJ Medicine, 3, 000726. doi: 10.1136/bmjmed-2023-000726
-4.  https://www.who.int/news/item/20-12-2022-WHO-updates-recommendations-on-HPV-vaccination-schedule
-5.  https://www.paho.org/en/news/5-9-2023-paho-technical-advisory-group-recommends-countries-americas-use-single-dose-hpv
+# References
+1.	https://www.who.int/teams/health-product-policy-and-standards/standards-and-specifications/vaccine-standardization/human-papillomavirus#:~:text=Human%20papillomavirus%20(HPV)%20is%20a,approximately%208%2Dkb%20in%20length. 
+2.	https://www.womenshealth.gov/a-z-topics/human-papillomavirus#:~:text=Genital%20HPV%20is%20the%20most,79%20million%20Americans%20have%20HPV.&text=It%20is%20so%20common%20that,some%20point%20in%20their%20lifetime.
+3.	https://www.health.state.mn.us/data/mcrs/data/qfhpv.html#:~:text=Human%20Papillomavirus%20(HPV)%20is%20a,with%20HPV%20in%20their%20lifetime.&text=Around%2050%20percent%20of%20HPV,HPV%2C%20which%20can%20cause%20cancer.
+4.	HPV and Cancer. In: National Cancer Institute [Internet]. 1 Mar 2019 [cited 12 Mar 2024]. Available: https://www.cancer.gov/about-cancer/causes-prevention/risk/infectious-agents/hpv-and-cancer
+5.	https://www.cancer.gov/about-cancer/causes-prevention/risk/infectious-agents/hpv-and-cancer
+6.	https://www.cdc.gov/vaccines/vpd/hpv/hcp/vaccines.html#:~:text=Vaccine%20Composition,45%2C%2052%2C%20and%2058. 
+7.	https://www.who.int/teams/health-product-policy-and-standards/standards-and-specifications/vaccine-standardization/human-papillomavirus#:~:text=Human%20papillomavirus%20(HPV)%20is%20a,approximately%208%2Dkb%20in%20length. 
+8.	https://www.cdc.gov/vaccines/vpd/hpv/hcp/recommendations.html#:~:text=Two%20doses%20of%20HPV%20vaccine,third%20dose%20of%20HPV%20vaccine.
+9.	https://www.cdc.gov/mmwr/volumes/72/wr/mm7234a3.htm#:~:text=In%202022%2C%2089.9%25%20of%20adolescents,HPV%20vaccination%20(HPV%20UTD). 
+
+10.  Sciences, N. A. of, Engineering, & Medicine, and. (2018, March 1). Factors that affect health-care utilization. Health-Care Utilization as a Proxy in Disability Determination. https://www.ncbi.nlm.nih.gov/books/NBK500097/
+11.  Mansfield, L. N., Chung, R. J., Silva, S. G., Merwin, E. I., & Gonzalez-Guarda, R. M. (2022). Social determinants of human papillomavirus vaccine series completion among U.S. adolescents: A mixed-methods study. SSM - population health, 18, 101082. https://doi.org/10.1016/j.ssmph.2022.101082
+12.  Casey, R. M., Akaba, H., Hyde, T. B, et al. (2024). Covid-19 pandemic and equity of global human papillomavirus vaccination: descriptive study of World Health Organization-Unicef vaccination coverage estimates. BMJ Medicine, 3, 000726. doi: 10.1136/bmjmed-2023-000726
+13.  https://www.who.int/news/item/20-12-2022-WHO-updates-recommendations-on-HPV-vaccination-schedule
+14.  https://www.paho.org/en/news/5-9-2023-paho-technical-advisory-group-recommends-countries-americas-use-single-dose-hpv
