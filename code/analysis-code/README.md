@@ -1,4 +1,4 @@
-This 'analysis-code' folder will contain the code used for analysis in an R document, which is pulled in chunks to a Quarto document.
+This 'analysis-code' folder will contain the quarto documents, including both code and analysis commentary. Please run the .qmd files in numerical, starting with `analysis1.qmd` onwards. 
 
 Notes to ourselves [ignore if reviewing this project]: 
 

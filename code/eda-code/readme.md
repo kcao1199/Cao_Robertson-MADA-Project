@@ -1,4 +1,4 @@
-The 'eda-code' folder contains the code used to do exploratory data analysis in the 'edacode.R' file, which is pulled in chunks including commentary to the 'EDA-code.qmd' file. The 'EDA-code_files' folder contains the 'figure-html' folder with the figures that were produced through the exploratory analysis. 
+The 'eda-code' folder contains the code used to do exploratory data analysis in the 'edacode.R' file, which is which is considered supplementary to the 'EDA-code.qmd' file, which has both the EDA code and commentary. The 'EDA-code_files' folder contains the 'figure-html' folder with the figures that were produced through the exploratory analysis. 
 
 
 Our notes [ignore if reviewing this project]: 

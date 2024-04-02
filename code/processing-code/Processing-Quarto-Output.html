@@ -110,8 +110,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <section id="setup" class="level1">
 <h1>Setup</h1>
-<p>This chunk pulls the R-script entitled Creating_Data_Frame.R.</p>
-<p>Load needed packages.</p>
+<p>I first load the needed packages.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(readr) <span class="co">#Loading the package to read the fwf</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(here) <span class="co">#Loading the package to produce relative pathway</span></span>
@@ -123,7 +122,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="data-loading" class="level1">
 <h1>Data loading</h1>
-<p>Note that for functions that come from specific packages (instead of base R), I often specify both package and function like so: package::function() that’s not required one could just call the function specifying the package makes it clearer where the function “lives”, but it adds typing. You can do it either way.</p>
+<p>I load the raw .DAT file into the environment and using the <code>readr</code> package, I declare the column position and labels of the desired columns of interest. I then apply the declared object with <code>read_fwf</code> function to the raw data (.DAT) file into a data frame named <code>data_frame</code>.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>column_position<span class="ot">&lt;-</span> <span class="fu">fwf_positions</span>(</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">start =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">89</span>, <span class="dv">287</span>, <span class="dv">295</span>, <span class="dv">314</span>, <span class="dv">330</span>, <span class="dv">331</span>, <span class="dv">334</span>, <span class="dv">336</span>, <span class="dv">343</span>, <span class="dv">344</span>, <span class="dv">345</span>,</span>
@@ -149,8 +148,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="specifying-factor-variables" class="level1">
 <h1>Specifying Factor Variables</h1>
-<p>By inspecting the data as done above, we find some problems that need addressing:</p>
-<p>First, there is an entry for height which says “sixty” instead of a number. Does that mean it should be a numeric 60? It somehow doesn’t make sense since the weight is 60kg, which can’t happen for a 60cm person (a baby). Since we don’t know how to fix this, we might decide to remove the person. This “sixty” entry also turned all Height entries into characters instead of numeric. That conversion to character also means that our summary function isn’t very meaningful. So let’s fix that first.</p>
+<p>With the data_frame in the environment, I nthen apply the labels for each factor levels using the provided codebook (this codebook can be found in ./data/raw_data/NIS-Teen_Puff22-CODEBOOK.pdf). This will make further downstream analysis much easier to work with.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>EDUC1levels<span class="ot">=</span><span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">3</span>,<span class="dv">4</span>)</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>EDUC1labels<span class="ot">=</span><span class="fu">c</span>(<span class="st">"LESS THAN 12 YEARS"</span>, <span class="st">"12 YEARS"</span>, <span class="st">"MORE THAN 12 YEARS, NON-COLLEGE GRAD"</span>, <span class="st">"COLLEGE GRADUATE"</span>)</span>
@@ -356,13 +354,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
  $ INS_BREAK_I   : Factor w/ 5 levels "CURRENTLY INSURED BUT UNINSURED AT SOME POINT SINCE AGE 11",..: 2 5 2 2 2 5 5 2 2 5 ...</code></pre>
 </div>
 </div>
-<p>Now we see that there is one person with a height of 6. That could be a typo, or someone mistakenly entered their height in feet. Since we unfortunately don’t know, we might need to remove this person, which we’ll do here.</p>
 </section>
 <section id="save-data" class="level1">
 <h1>Save data</h1>
-<p>All done, data is clean now. Time to save. Let’s assign at the end to some final variable, this makes it easier to add further cleaning steps above.</p>
-<p>Finally, we save the clean data as RDS file. I suggest you save your processed and cleaned data as RDS or RDA/Rdata files. This preserves coding like factors, characters, numeric, etc. If you save as CSV, that information would get lost. However, CSV is better for sharing with others since it’s plain text. If you do CSV, you might want to write down somewhere what each variable is.</p>
-<p>See here for some suggestions on how to store your processed data: http://www.sthda.com/english/wiki/saving-data-into-r-data-format-rds-and-rdata</p>
+<p>We then save the data frame into a .rds and a csv file named “NIS_Teen_Data_2022.csv” and “processeddata.rds”</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>output_file<span class="ot">&lt;-</span> <span class="fu">here</span>(<span class="st">"data"</span>, <span class="st">"processed-data"</span>, <span class="st">"NIS_Teen_Data_2022.csv"</span>)</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">write.csv</span>(data, <span class="at">file =</span> output_file, <span class="at">row.names =</span> <span class="cn">FALSE</span>)</span>
@@ -375,38 +370,21 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell">
 <div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(here)</span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(skimr)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning: package 'skimr' was built under R version 4.3.2</code></pre>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(skimr)</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyr)</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(naniar)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyr)</span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(naniar)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning: package 'naniar' was built under R version 4.3.2</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>
-Attaching package: 'naniar'</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>The following object is masked from 'package:skimr':
-
-    n_complete</code></pre>
-</div>
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co">#First, I load the data into a usable data frame.</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
+<p>First, I load the data into a usable data frame.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>data_location <span class="ot">&lt;-</span> here<span class="sc">::</span><span class="fu">here</span>(<span class="st">"data"</span>,<span class="st">"processed-data"</span>,<span class="st">"processeddata.rds"</span>)</span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>NISTeenVax <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(data_location)</span>
-<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a><span class="co">#Next, I will check the structure of the data and I will check for any NA or missing values in the data frame.</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>data_location <span class="ot">&lt;-</span> here<span class="sc">::</span><span class="fu">here</span>(<span class="st">"data"</span>,<span class="st">"processed-data"</span>,<span class="st">"processeddata.rds"</span>)</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>NISTeenVax <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(data_location)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <section id="exploring-the-data" class="level2">
 <h2 class="anchored" data-anchor-id="exploring-the-data">Exploring the data</h2>
+<p>Next, I will check the structure of the data and I will check for any NA or missing values in the data frame.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(NISTeenVax)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(NISTeenVax)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>tibble [43,738 × 25] (S3: tbl_df/tbl/data.frame)
  $ SEQNUMT       : num [1:43738] 30397 2792 27914 37271 4991 ...
@@ -435,7 +413,7 @@ Attaching package: 'naniar'</code></pre>
  $ INS_STAT2_I   : Factor w/ 5 levels "PRIVATE INSURANCE ONLY",..: 2 5 2 1 2 5 5 2 2 5 ...
  $ INS_BREAK_I   : Factor w/ 5 levels "CURRENTLY INSURED BUT UNINSURED AT SOME POINT SINCE AGE 11",..: 2 5 2 2 2 5 5 2 2 5 ...</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>dplyr<span class="sc">::</span><span class="fu">glimpse</span>(NISTeenVax)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>dplyr<span class="sc">::</span><span class="fu">glimpse</span>(NISTeenVax)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Rows: 43,738
 Columns: 25
@@ -465,8 +443,8 @@ $ P_UTDHPV3      &lt;fct&gt; NOT UTD, Missing Data, NOT UTD, NOT UTD, NOT UTD, M
 $ INS_STAT2_I    &lt;fct&gt; "ANY MEDICAID", "MISSING Data", "ANY MEDICAID", "PRIVAT…
 $ INS_BREAK_I    &lt;fct&gt; CURRENTLY INSURED AND NEVER UNINSURED SINCE AGE 11, Dat…</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>NA_columns <span class="ot">&lt;-</span> <span class="fu">colSums</span>(<span class="fu">is.na</span>(NISTeenVax))</span>
-<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(NA_columns)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>NA_columns <span class="ot">&lt;-</span> <span class="fu">colSums</span>(<span class="fu">is.na</span>(NISTeenVax))</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(NA_columns)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>       SEQNUMT           YEAR            AGE          EDUC1     INCPORAR_I 
              0              0              0              0              0 
@@ -479,11 +457,11 @@ $ INS_BREAK_I    &lt;fct&gt; CURRENTLY INSURED AND NEVER UNINSURED SINCE AGE 11,
 P_UTDHPV_15INT      P_UTDHPV2      P_UTDHPV3    INS_STAT2_I    INS_BREAK_I 
              0              0              0              0              0 </code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co">#There are no missing values, but there may be missing data that is filled with a character value within the data frame. I will first find the character value assigned to missing variables by exploring the levels of each variable using the sapply() and then lapply() function.</span></span>
-<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>factor_cols <span class="ot">&lt;-</span> <span class="fu">sapply</span>(NISTeenVax, is.factor) <span class="co">#Find the columns that are factor variables</span></span>
-<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>factor_levels <span class="ot">&lt;-</span> <span class="fu">lapply</span>(NISTeenVax[, factor_cols, <span class="at">drop =</span> <span class="cn">FALSE</span>], levels) <span class="co">#Find the levels of each factor variable</span></span>
-<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(factor_levels)<span class="co">#Pritn factor levels for only the factor columns</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co">#There are no missing values, but there may be missing data that is filled with a character value within the data frame. I will first find the character value assigned to missing variables by exploring the levels of each variable using the sapply() and then lapply() function.</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>factor_cols <span class="ot">&lt;-</span> <span class="fu">sapply</span>(NISTeenVax, is.factor) <span class="co">#Find the columns that are factor variables</span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>factor_levels <span class="ot">&lt;-</span> <span class="fu">lapply</span>(NISTeenVax[, factor_cols, <span class="at">drop =</span> <span class="cn">FALSE</span>], levels) <span class="co">#Find the levels of each factor variable</span></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(factor_levels)<span class="co">#Print factor levels for only the factor columns</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>$EDUC1
 [1] "LESS THAN 12 YEARS"                  
@@ -591,21 +569,22 @@ $INS_BREAK_I
 [4] "CURRENTLY UNINSURED AND NEVER INSURED SINCE AGE 11"        
 [5] "Data Missing"                                              </code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Several columns contain factor levels that are labelled, "Data missing", "Missing data", "Unknown", "Refused", Missing in error", and "Don't know". I will replace these values for each variable with an NA in R so that they will be counted as missing values for analysis.</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Several columns contain factor levels that are labelled, "Data missing", "Missing data", "Unknown", "Refused", Missing in error", and "Don't know". I will replace these values for each variable with an NA in R so that they will be counted as missing values for analysis.</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="eliminating-na-values-and-columns" class="level2">
 <h2 class="anchored" data-anchor-id="eliminating-na-values-and-columns">Eliminating NA Values and Columns</h2>
+<p>Several columns contain factor levels that are labelled, “Data missing”, “Missing data”, “Unknown”, “Refused”, Missing in error”, and “Don’t know”. I will replace these values for each variable with an NA in R so that they will be counted as missing values for analysis.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>missing_values <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"Data Missing"</span>, <span class="st">"MISSING Data"</span>, <span class="st">"Missing Data"</span>, <span class="st">"MISSING IN ERROR"</span>) <span class="co">#Group all of the factor levels that indicate a missing value</span></span>
-<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a><span class="co">#After back and forth with ChatGPT3.5, it suggested to use the dplyr mutate function and replace function to specify that factor variables with the levels in the group above will have those level values replaced with NA</span></span>
-<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>NISTeenVax2 <span class="ot">&lt;-</span> NISTeenVax <span class="sc">%&gt;%</span> <span class="co">#Create new dataframe</span></span>
-<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="fu">where</span>(is.factor), <span class="sc">~</span> <span class="fu">replace</span>(., . <span class="sc">%in%</span> missing_values, <span class="cn">NA</span>))) <span class="co">#mutate only at factor variables in the dataframe and replace the levels specified above with NA for those factors</span></span>
-<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a><span class="co">#Now I will be able to check for NA values using the skim() function. I can also display the NA values graphically using gg_miss_var()</span></span>
-<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a>skimr<span class="sc">::</span><span class="fu">skim</span>(NISTeenVax2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>missing_values <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"Data Missing"</span>, <span class="st">"MISSING Data"</span>, <span class="st">"Missing Data"</span>, <span class="st">"MISSING IN ERROR"</span>) <span class="co">#Group all of the factor levels that indicate a missing value</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a><span class="co">#After back and forth with ChatGPT3.5, it suggested to use the dplyr mutate function and replace function to specify that factor variables with the levels in the group above will have those level values replaced with NA</span></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>NISTeenVax2 <span class="ot">&lt;-</span> NISTeenVax <span class="sc">%&gt;%</span> <span class="co">#Create new dataframe</span></span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="fu">where</span>(is.factor), <span class="sc">~</span> <span class="fu">replace</span>(., . <span class="sc">%in%</span> missing_values, <span class="cn">NA</span>))) <span class="co">#mutate only at factor variables in the dataframe and replace the levels specified above with NA for those factors</span></span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a><span class="co">#Now I will be able to check for NA values using the skim() function. I can also display the NA values graphically using gg_miss_var()</span></span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>skimr<span class="sc">::</span><span class="fu">skim</span>(NISTeenVax2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <table class="table table-sm table-striped small">
 <caption>Data summary</caption>
@@ -925,25 +904,25 @@ $INS_BREAK_I
 </tbody>
 </table>
 </div>
-<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="fu">gg_miss_var</span>(NISTeenVax2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">gg_miss_var</span>(NISTeenVax2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="Processing-Quarto-Output_files/figure-html/cleandata2-1.png" class="img-fluid" width="672"></p>
+<p><img src="Processing-Quarto-Output_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid" width="672"></p>
 </div>
-<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="co">#The most important factors for this analysis is the response variables called variations of "P_UTDHPV".</span></span>
-<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a><span class="co">#We have 27,024 missing values for each of these columns. These missing values may have come from the same survey type, however analysis cannot be performed when this crucial data is missing. For this reason, I will find the rows where these missing values take place, ensure that they are all the same rows for the multiple variables, and delete these rows specifically.</span></span>
-<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a><span class="co">#I used chatGPT3,5 to find the function to select for certain rows using dplyr and then filter these for NA values</span></span>
-<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a><span class="do">##I prompted it by using the variable names a,b,c and asked for it to select these columns and filter for the rows with missing variables</span></span>
-<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>rows_with_missing_in_all <span class="ot">&lt;-</span> NISTeenVax2 <span class="sc">%&gt;%</span></span>
-<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="st">"P_U13HPV"</span>, <span class="st">"P_U13HPV3"</span>, <span class="st">"P_UTDHPV"</span>, <span class="st">"P_UTDHPV_15"</span>, <span class="st">"P_UTDHPV_15INT"</span>, <span class="st">"P_UTDHPV2"</span>, <span class="st">"P_UTDHPV3"</span>) <span class="sc">%&gt;%</span> <span class="co">#select for columns in question</span></span>
-<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter_all</span>(<span class="fu">any_vars</span>(<span class="fu">is.na</span>(.))) <span class="co">#Find rows with NA values</span></span>
-<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a><span class="do">##I then prompted ChatGPT3.5 to provide me with code to display the location of these rows so that I may check if they all matched.</span></span>
-<span id="cb27-10"><a href="#cb27-10" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="fu">nrow</span>(rows_with_missing_in_all) <span class="sc">&gt;</span> <span class="dv">0</span>) {</span>
-<span id="cb27-11"><a href="#cb27-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>(<span class="st">"Rows with missing values in aforementioned variables"</span>)</span>
-<span id="cb27-12"><a href="#cb27-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>(rows_with_missing_in_all)</span>
-<span id="cb27-13"><a href="#cb27-13" aria-hidden="true" tabindex="-1"></a>} <span class="cf">else</span> {</span>
-<span id="cb27-14"><a href="#cb27-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>(<span class="st">"No rows with missing values in aforementioned variables"</span>)</span>
-<span id="cb27-15"><a href="#cb27-15" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="co">#The most important factors for this analysis is the response variables called variations of "P_UTDHPV".</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="co">#We have 27,024 missing values for each of these columns. These missing values may have come from the same survey type, however analysis cannot be performed when this crucial data is missing. For this reason, I will find the rows where these missing values take place, ensure that they are all the same rows for the multiple variables, and delete these rows specifically.</span></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a><span class="co">#I used chatGPT3,5 to find the function to select for certain rows using dplyr and then filter these for NA values</span></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a><span class="do">##I prompted it by using the variable names a,b,c and asked for it to select these columns and filter for the rows with missing variables</span></span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>rows_with_missing_in_all <span class="ot">&lt;-</span> NISTeenVax2 <span class="sc">%&gt;%</span></span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="st">"P_U13HPV"</span>, <span class="st">"P_U13HPV3"</span>, <span class="st">"P_UTDHPV"</span>, <span class="st">"P_UTDHPV_15"</span>, <span class="st">"P_UTDHPV_15INT"</span>, <span class="st">"P_UTDHPV2"</span>, <span class="st">"P_UTDHPV3"</span>) <span class="sc">%&gt;%</span> <span class="co">#select for columns in question</span></span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter_all</span>(<span class="fu">any_vars</span>(<span class="fu">is.na</span>(.))) <span class="co">#Find rows with NA values</span></span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a><span class="do">##I then prompted ChatGPT3.5 to provide me with code to display the location of these rows so that I may check if they all matched.</span></span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="fu">nrow</span>(rows_with_missing_in_all) <span class="sc">&gt;</span> <span class="dv">0</span>) {</span>
+<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>(<span class="st">"Rows with missing values in aforementioned variables"</span>)</span>
+<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>(rows_with_missing_in_all)</span>
+<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a>} <span class="cf">else</span> {</span>
+<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>(<span class="st">"No rows with missing values in aforementioned variables"</span>)</span>
+<span id="cb21-15"><a href="#cb21-15" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] "Rows with missing values in aforementioned variables"
 # A tibble: 27,024 × 7
@@ -961,17 +940,17 @@ $INS_BREAK_I
 10 &lt;NA&gt;     &lt;NA&gt;      &lt;NA&gt;     &lt;NA&gt;        &lt;NA&gt;           &lt;NA&gt;      &lt;NA&gt;     
 # ℹ 27,014 more rows</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="co">#It seems that all of the missing rows match for all of these variables. This means that we may delete the rows that contain missing values for all of the specified variables.</span></span>
-<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a><span class="co">#Because the variables listed all contain missing values in the same rows, I will select only one variable to filter.</span></span>
-<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>NISTeenVax3 <span class="ot">&lt;-</span> NISTeenVax2 <span class="sc">%&gt;%</span></span>
-<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(P_UTDHPV)) <span class="co">#drop the rows with NA values in P_UTDHPV</span></span>
-<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a>NISTeenVax3 <span class="ot">&lt;-</span> NISTeenVax3 <span class="sc">%&gt;%</span></span>
-<span id="cb29-7"><a href="#cb29-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(INS_BREAK_I))</span>
-<span id="cb29-8"><a href="#cb29-8" aria-hidden="true" tabindex="-1"></a>NISTeenVax3 <span class="ot">&lt;-</span> NISTeenVax3 <span class="sc">%&gt;%</span></span>
-<span id="cb29-9"><a href="#cb29-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(FACILITY))</span>
-<span id="cb29-10"><a href="#cb29-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb29-11"><a href="#cb29-11" aria-hidden="true" tabindex="-1"></a>skimr<span class="sc">::</span><span class="fu">skim</span>(NISTeenVax3) <span class="co">#check again for missing values in these variables</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="co">#It seems that all of the missing rows match for all of these variables. This means that we may delete the rows that contain missing values for all of the specified variables.</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="co">#Because the variables listed all contain missing values in the same rows, I will select only one variable to filter.</span></span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>NISTeenVax3 <span class="ot">&lt;-</span> NISTeenVax2 <span class="sc">%&gt;%</span></span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(P_UTDHPV)) <span class="co">#drop the rows with NA values in P_UTDHPV</span></span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>NISTeenVax3 <span class="ot">&lt;-</span> NISTeenVax3 <span class="sc">%&gt;%</span></span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(INS_BREAK_I))</span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>NISTeenVax3 <span class="ot">&lt;-</span> NISTeenVax3 <span class="sc">%&gt;%</span></span>
+<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(FACILITY))</span>
+<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-11"><a href="#cb23-11" aria-hidden="true" tabindex="-1"></a>skimr<span class="sc">::</span><span class="fu">skim</span>(NISTeenVax3) <span class="co">#check again for missing values in these variables</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <table class="table table-sm table-striped small">
 <caption>Data summary</caption>
@@ -1291,11 +1270,11 @@ $INS_BREAK_I
 </tbody>
 </table>
 </div>
-<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="fu">gg_miss_var</span>(NISTeenVax3)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="fu">gg_miss_var</span>(NISTeenVax3)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="Processing-Quarto-Output_files/figure-html/cleandata2-2.png" class="img-fluid" width="672"></p>
+<p><img src="Processing-Quarto-Output_files/figure-html/unnamed-chunk-8-2.png" class="img-fluid" width="672"></p>
 </div>
-<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>skimr<span class="sc">::</span><span class="fu">skim</span>(NISTeenVax3) <span class="co">#check again for missing values in these variables</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>skimr<span class="sc">::</span><span class="fu">skim</span>(NISTeenVax3) <span class="co">#check again for missing values in these variables</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <table class="table table-sm table-striped small">
 <caption>Data summary</caption>
@@ -1615,16 +1594,16 @@ $INS_BREAK_I
 </tbody>
 </table>
 </div>
-<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="fu">gg_miss_var</span>(NISTeenVax3)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="fu">gg_miss_var</span>(NISTeenVax3)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="Processing-Quarto-Output_files/figure-html/cleandata2-3.png" class="img-fluid" width="672"></p>
+<p><img src="Processing-Quarto-Output_files/figure-html/unnamed-chunk-8-3.png" class="img-fluid" width="672"></p>
 </div>
-<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="co">#The majority of data is missing from the WELLCHILD column, which indicates whether the teen had receieved a Well Child visit in recent years. Because this is not crucial to out analysis, I will delete this column. </span></span>
-<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a><span class="co">#The year column in unnecessary, since all values are from the year 2022. So, I will also delete the YEAR column.</span></span>
-<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>NISTeenVax4 <span class="ot">&lt;-</span> NISTeenVax3 <span class="sc">%&gt;%</span> <span class="co">#create a new data frame for the filtered data</span></span>
-<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a> <span class="fu">select</span>(<span class="sc">-</span>WELLCHILD, <span class="sc">-</span>YEAR) <span class="co">#Use the select() filter to delete multiple columns from the data frame</span></span>
-<span id="cb33-6"><a href="#cb33-6" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(NISTeenVax4) <span class="co">#Check the remaining variables</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="co">#The majority of data is missing from the WELLCHILD column, which indicates whether the teen had receieved a Well Child visit in recent years. Because this is not crucial to out analysis, I will delete this column. </span></span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a><span class="co">#The year column in unnecessary, since all values are from the year 2022. So, I will also delete the YEAR column.</span></span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>NISTeenVax4 <span class="ot">&lt;-</span> NISTeenVax3 <span class="sc">%&gt;%</span> <span class="co">#create a new data frame for the filtered data</span></span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a> <span class="fu">select</span>(<span class="sc">-</span>WELLCHILD, <span class="sc">-</span>YEAR) <span class="co">#Use the select() filter to delete multiple columns from the data frame</span></span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(NISTeenVax4) <span class="co">#Check the remaining variables</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>tibble [16,564 × 23] (S3: tbl_df/tbl/data.frame)
  $ SEQNUMT       : num [1:16564] 30397 27914 37271 7893 41213 ...
@@ -1651,16 +1630,16 @@ $INS_BREAK_I
  $ INS_STAT2_I   : Factor w/ 5 levels "PRIVATE INSURANCE ONLY",..: 2 2 1 2 2 1 4 1 1 2 ...
  $ INS_BREAK_I   : Factor w/ 5 levels "CURRENTLY INSURED BUT UNINSURED AT SOME POINT SINCE AGE 11",..: 2 2 2 2 2 2 3 2 2 2 ...</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Save cleaned data as an RDS file.</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="saving-the-data-frame" class="level2">
 <h2 class="anchored" data-anchor-id="saving-the-data-frame">Saving the Data Frame</h2>
+<p>Save cleaned data as an RDS file.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>output_file2<span class="ot">&lt;-</span> <span class="fu">here</span>(<span class="st">"data"</span>, <span class="st">"processed-data"</span>, <span class="st">"NIS_Teen_Data_2022_clean1.csv"</span>)</span>
-<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a><span class="fu">write.csv</span>(NISTeenVax4, <span class="at">file =</span> output_file2, <span class="at">row.names =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>saved_pathway <span class="ot">&lt;-</span> <span class="fu">here</span>(<span class="st">"./data/processed-data/cleandata1.rds"</span>)</span>
-<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a><span class="fu">saveRDS</span>(NISTeenVax4, <span class="at">file =</span> saved_pathway )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>output_file2<span class="ot">&lt;-</span> <span class="fu">here</span>(<span class="st">"data"</span>, <span class="st">"processed-data"</span>, <span class="st">"NIS_Teen_Data_2022_clean1.csv"</span>)</span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a><span class="fu">write.csv</span>(NISTeenVax4, <span class="at">file =</span> output_file2, <span class="at">row.names =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>saved_pathway <span class="ot">&lt;-</span> <span class="fu">here</span>(<span class="st">"./data/processed-data/cleandata1.rds"</span>)</span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a><span class="fu">saveRDS</span>(NISTeenVax4, <span class="at">file =</span> saved_pathway )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 </section>

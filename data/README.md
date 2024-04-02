@@ -4,6 +4,8 @@ The data files here are loaded/manipulated/changed/saved using the code from the
 
 The DAT fine in the 'raw-data' folder, has not been changed, but manipulated with code to produce the CSV files in the 'processed-data' folder.
 
+A codebook (provided from the data source) is provded in the`raw-data` directory, but is not needed to observe the analysis. 
+
 Note: Sub-folders under 'processed-data' will be created if further processing steps are required. 
 
 Dr. Handel's notes:

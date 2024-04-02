@@ -17,7 +17,7 @@ knitr::opts_chunk$set(warning = FALSE, message = FALSE)
 
 
 #### Loading library and data set
-``` {R}
+``` {R, warnings=FALSE, messages=FALSE}
 # Load required libraries
 library(MASS) # for robust regression
 library(caret) # for cross-validation

@@ -6,7 +6,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="dcterms.date" content="2024-03-16">
+<meta name="dcterms.date" content="2024-04-02">
 
 <title>Data Analysis and Modelling of Teen Vaccination Surveys</title>
 <style>
@@ -91,7 +91,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">March 16, 2024</p>
+      <p class="date">April 2, 2024</p>
     </div>
   </div>
   
@@ -106,7 +106,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>The previous analysis performed shown on analysis1.qmd found in the same directory, showed collinearity among many of the predictor variables. The following script is an attempt to reduce that issue to prevent problem when performing analyses further downstream.</p>
 <section id="loading-library-and-data-set" class="level4">
 <h4 class="anchored" data-anchor-id="loading-library-and-data-set">Loading library and data set</h4>
-<div class="cell">
+<div class="cell" data-warnings="false" data-messages="false">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load required libraries</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(MASS) <span class="co"># for robust regression</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(caret) <span class="co"># for cross-validation</span></span>
@@ -138,17 +138,25 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Start an H2O cluster</span></span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="fu">h2o.init</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code> Connection successful!
+<pre><code>
+H2O is not running yet, starting it now...
+
+Note:  In case of errors look at the following log files:
+    C:\Users\16786\AppData\Local\Temp\RtmpoDjNTO\file2010470a3408/h2o_16786_started_from_r.out
+    C:\Users\16786\AppData\Local\Temp\RtmpoDjNTO\file20104ac34aa0/h2o_16786_started_from_r.err
+
+
+Starting H2O JVM and connecting: . Connection successful!
 
 R is connected to the H2O cluster: 
-    H2O cluster uptime:         1 hours 39 minutes 
+    H2O cluster uptime:         5 seconds 159 milliseconds 
     H2O cluster timezone:       America/New_York 
     H2O data parsing timezone:  UTC 
     H2O cluster version:        3.44.0.3 
-    H2O cluster version age:    2 months and 24 days 
-    H2O cluster name:           H2O_started_from_R_16786_sef920 
+    H2O cluster version age:    3 months and 12 days 
+    H2O cluster name:           H2O_started_from_R_16786_bue160 
     H2O cluster total nodes:    1 
-    H2O cluster total memory:   1.83 GB 
+    H2O cluster total memory:   1.88 GB 
     H2O cluster total cores:    8 
     H2O cluster allowed cores:  8 
     H2O cluster healthy:        TRUE 
@@ -190,7 +198,7 @@ R is connected to the H2O cluster:
 ==============
 
 H2ODimReductionModel: pca
-Model ID:  PCA_model_R_1710569927046_258 
+Model ID:  PCA_model_R_1712076183163_1 
 Importance of components: 
                              pc1
 Standard deviation     15.130703
@@ -225,6 +233,8 @@ No model metrics available for PCA</code></pre>
   |                                                                            
   |                                                                      |   0%
   |                                                                            
+  |=======                                                               |  10%
+  |                                                                            
   |======================================================================| 100%</code></pre>
 </div>
 <div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># View Lasso Model</span></span>
@@ -234,12 +244,12 @@ No model metrics available for PCA</code></pre>
 ==============
 
 H2OBinomialModel: glm
-Model ID:  GLM_model_R_1710569927046_259 
+Model ID:  GLM_model_R_1712076183163_2 
 GLM Model: summary
     family  link             regularization number_of_predictors_total
 1 binomial logit Lasso (lambda = 2.219E-5 )                        105
   number_of_active_predictors number_of_iterations    training_frame
-1                          97                    3 mydata_sid_a6f8_1
+1                          97                    3 mydata_sid_8b7b_1
 
 Coefficients: glm coefficients
            names coefficients standardized_coefficients
@@ -336,6 +346,10 @@ Gains/Lift Table: Extract with `h2o.gainsLift(&lt;model&gt;, &lt;data&gt;)` or `
   |                                                                            
   |                                                                      |   0%
   |                                                                            
+  |====                                                                  |   6%
+  |                                                                            
+  |===================================================================== |  98%
+  |                                                                            
   |======================================================================| 100%</code></pre>
 </div>
 <div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Display results</span></span>
@@ -345,14 +359,14 @@ Gains/Lift Table: Extract with `h2o.gainsLift(&lt;model&gt;, &lt;data&gt;)` or `
 ==============
 
 H2OBinomialModel: glm
-Model ID:  GLM_model_R_1710569927046_261 
+Model ID:  GLM_model_R_1712076183163_4 
 GLM Model: summary
     family  link                                regularization
 1 binomial logit Elastic Net (alpha = 0.5, lambda = 4.438E-5 )
   number_of_predictors_total number_of_active_predictors number_of_iterations
 1                        105                          97                    3
    training_frame
-1 RTMP_sid_a6f8_4
+1 RTMP_sid_8b7b_4
 
 Coefficients: glm coefficients
            names coefficients standardized_coefficients

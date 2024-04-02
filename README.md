@@ -25,16 +25,20 @@ used to keep track of packages.
 You may first copy this template using the link to our Github [insert link here]. After copying the repository, you may run the code in this order:
 
 * In the 'code' folder, select the 'processing-code' subfolder
-  * First, select the 'creating-df' subfolder and run 'Creating_Data_Frame.R'
-  * Next, under the 'cleaningdata' subfolder, run 'cleaning1.R'
-  * Under the 'processing-code' subfolder, you may choose to render     'Processing-Quarto-Output.qmd' to view the code in chunks with commentary
+  * First, under the 'processing-code' subfolder, you may choose to render     'Processing-Quarto-Output.qmd' to view the code in chunks with commentary
 * Return to the main 'code' folder and select the 'eda-code' subfolder
-  * Run 'edacode.R'
-  * Render 'EDA-code.qmd' to view the code chunks with commentary
+  * Run and render 'EDA-code.qmd' to view the code chunks with commentary
 * Return to the main 'code' folder and select the 'analysis-code' subfolder
-  * First, run 'analysis1.qmd'
-  * Next, run 'analysis2.qmd'
+  * First, run and render 'analysis1.qmd'
+  * Next, run and render 'analysis2.qmd'
 [more code files to be added to analysis code]
+
+ <hr>
+** To view the manuscript **
+
+* In the `products` directory, enter the `manuscript` folder. 
+  * The manuscript can be viewed either by downloading and viewing  `Manuscript.docx` or opening and     rendering `Manuscript.qmd`. Either ways will allow you to view a word document of the manuscript. 
+
 
 # Findings
 
