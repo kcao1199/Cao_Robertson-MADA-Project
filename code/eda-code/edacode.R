@@ -5,6 +5,10 @@ library(dplyr)
 library(skimr)
 library(ggplot2)
 library(knitr)
+library(kableExtra)
+library(webshot2)
+library(tidyverse)
+library(gtsummary)
 
 ## ---- loaddata --------
 #Path to data. Note the use of the here() package and not absolute paths
@@ -19,11 +23,40 @@ print(summary_df)
 summarytable_file = here("results","tables", "summarytable.rds")
 saveRDS(summary_df, file = summarytable_file)
 
+# Select columns for a summary table
+table_vars <- mydata %>%
+  select(P_UTDHPV, AGE, SEX, INS_STAT2_I, INCPOV1, RACEETHK, EDUC1, LANGUAGE, RENT_OWN)%>%
+  filter(SEX %in% c("MALE", "FEMALE"))%>%
+  filter(INS_STAT2_I %in% c("PRIVATE INSURANCE ONLY", "ANY MEDICAID", "OTHER INSURANCE (CHIP, IHS, MILITARY, OR OTHER, ALONE OR IN COMB. WITH PRIVATE INSURANCE)", "UNINSURED"))
+
+# Create Table 1 (study sample characteristics) from the data
+table1 <- table_vars %>% tbl_summary(by = P_UTDHPV, 
+                                 statistic = list(all_categorical() ~ "{n} ({p}%)"),
+                                 label = c(AGE ~ "Age (years)", 
+                                           SEX ~ "Sex",   
+                                           INS_STAT2_I ~ "Insurance Status", 
+                                           INCPOV1 ~ "Poverty Status",      
+                                           RACEETHK ~ "Race and Ethnicity", 
+                                           EDUC1 ~ "Maternal Education-level",
+                                           LANGUAGE ~ "Survey Language",
+                                           RENT_OWN ~ "Housing Status"))%>%
+  modify_caption("Table 1. Socioeconomic characteristics of U.S. teenagers who have completed or are up-to-date with HPV vaccination series.")
+
+table1
+
+# Save the summary table
+saveRDS(table1, file = here("results/tables/table1.rds"))
+
+
+
 ## ---- INCPORAR_I --------
 p1 <- mydata %>% ggplot(aes(x=INCPORAR_I)) + geom_histogram() 
 plot(p1)
 figure_file = here("results", "figures", "income.png")
+figure_image = here("products", "manuscript", "images", "income.png")
 ggsave(filename = figure_file, plot=p1) 
+ggsave(filename = figure_image, plot=p1) 
+
 
 ## ---- STATE --------
 summary(mydata$STATE)
@@ -60,7 +93,9 @@ p3 <- ggplot(data_df, aes(x = Var1, y = Freq)) +
 print(p3)
 
 figure_file = here("results", "figures", "state.distribution.png")
+figure_image = here("products", "manuscript", "images", "state.distribution.png")
 ggsave(filename = figure_file, plot=p3) 
+ggsave(filename = figure_image, plot=p3)
 
 
 ## ---- INCQ298A --------
@@ -98,6 +133,8 @@ print(p5)
 
 figure_file = here("results", "figures", "family.income.distribution.png")
 ggsave(filename = figure_file, plot=p5) 
+figure_image = here("products", "manuscript", "images", "family.income.distribution.png")
+ggsave(filename = figure_image, plot=p5) 
 
 ## ---- RACEETHK --------
 summary(mydata$RACEETHK)
@@ -133,6 +170,8 @@ print(p7)
 
 figure_file = here("results", "figures", "ethnicity.distribution.png")
 ggsave(filename = figure_file, plot=p7) 
+figure_image = here("products", "manuscript", "images", "ethnicity.distribution.png")
+ggsave(filename = figure_image, plot=p7) 
 
 ## ---- RACE_K --------
 summary(mydata$RACE_K)
@@ -167,6 +206,8 @@ print(p9)
 
 figure_file = here("results", "figures", "race.distribution.png")
 ggsave(filename = figure_file, plot=p9) 
+figure_image = here("products", "manuscript", "images", "race.distribution.png")
+ggsave(filename = figure_image, plot=p9) 
 
 ## ---- INS_STAT2_I --------
 summary(mydata$INS_STAT2_I)
@@ -201,6 +242,8 @@ print(p11)
 
 figure_file = here("results", "figures", "insurance.status.distribution.png")
 ggsave(filename = figure_file, plot=p11) 
+figure_image = here("products", "manuscript", "images", "insurance.status.distribution.png")
+ggsave(filename = figure_image, plot=p11) 
 
 ## ---- FACILITY --------
 summary(mydata$FACILITY)
@@ -229,14 +272,15 @@ p13 <- ggplot(facility_df, aes(x = Var1, y = Freq)) +
   geom_bar(stat = "identity", fill = "skyblue") +
   labs(title = "Facility Distribution Percentage",
        x = "Facility",
-       y = "Percentage") +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5))
+       y = "Percentage")
 
 #Viewing the plot to confirm it is done properly
 print(p13)
 
 figure_file = here("results", "figures", "facility.distribution.png")
 ggsave(filename = figure_file, plot=p13) 
+figure_image = here("products", "manuscript", "images", "facility.distribution.png")
+ggsave(filename = figure_image, plot=p13) 
 
 ## ---- Vaccination --------
 summary(mydata$P_UTDHPV)
@@ -271,6 +315,8 @@ print(p15)
 
 figure_file = here("results", "figures", "vaccination.status.distribution.png")
 ggsave(filename = figure_file, plot=p15) 
+figure_image = here("products", "manuscript", "images", "vaccination.status.distribution.png")
+ggsave(filename = figure_image, plot=p15) 
 
 ## ---- state-vaccine --------
 #Aggregate vaccine status stratified by state
@@ -288,10 +334,19 @@ table1 <- mydata %>%
   arrange(STATE)
 
 #Print the table
-kable(table1, caption = "Vaccine Distribution Percentage per State (Only 'UTD' Status)")
+table_html <- kable(table1, caption = "Vaccine Distribution Percentage per State (Only 'UTD' Status)") %>%
+  kable_styling(latex_options = c("striped", "scale_down", "hold_position", "font_size"))
+
+# Render the table as HTML
+html_file <- "products/manuscript/images/table.html"
+writeLines(as.character(table_html), html_file)
+
+# Convert HTML to image using webshot
+webshot(html_file, "products/manuscript/images/state-vaccine-completion.png")
 
 #Write the table to save to the results
 write.table(table1, file = here("results","tables", "state-vaccine-completion.txt"), sep = "\t", row.names = FALSE)
+
 
 ## ---- facility-vaccine --------
 #Stratifying the HPV vaccine completion by facility
@@ -305,6 +360,8 @@ p18 <- ggplot(mydata, aes(x = P_UTDHPV, fill = FACILITY)) +
 #Save the bar plot
 figure_file <- here("results", "figures", "facility-vaccination.png")
 ggsave(filename = figure_file, plot = p18, width = 8, height = 6, dpi = 300)
+figure_image = here("products", "manuscript", "images", "facility-vaccination.png")
+ggsave(filename = figure_image, plot=p18) 
 
 ## ---- race-ethnicity-vaccine --------
 #Aggregate total count per each race-ethnicity factor level
@@ -335,6 +392,8 @@ p16 <- mydata %>% ggplot(aes(x=P_UTDHPV, y=INCPORAR_I)) + geom_boxplot()
 plot(p16)
 figure_file = here("results","figures", "income-vaccination.png")
 ggsave(filename = figure_file, plot=p16) 
+figure_image = here("products", "manuscript", "images", "income-vaccination.png")
+ggsave(filename = figure_image, plot=p16) 
 
 # Fitting Income-poverty levels and Vaccination status to a statistical model
 model <- lm(INCPORAR_I ~ P_UTDHPV, data = mydata)
@@ -354,6 +413,8 @@ p17 <- mydata %>%
 plot(p17)
 figure_file = here("results","figures", "insurance-income-stratified.png")
 ggsave(filename = figure_file, plot=p17) 
+figure_image = here("products", "manuscript", "images", "insurance-income-stratified.png")
+ggsave(filename = figure_image, plot=p17) 
 
 # Fitting Income-poverty levels and insurance status to a statistical model
 model <- lm(INCPORAR_I ~ INS_STAT2_I, data = mydata)
@@ -371,6 +432,8 @@ p19 <- mydata %>%
 plot(p19)
 figure_file = here("results","figures", "raceeth-income-stratified.png")
 ggsave(filename = figure_file, plot=p19) 
+figure_image = here("products", "manuscript", "images", "raceeth-income-stratified.png")
+ggsave(filename = figure_image, plot=p19) 
 
 # Fitting Income-poverty levels and insurance status to a statistical model
 model <- lm(INCPORAR_I ~ P_UTDHPV, RACEETHK, data = mydata)

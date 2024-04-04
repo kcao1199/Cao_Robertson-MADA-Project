@@ -101,45 +101,49 @@ We saved the cleaned data as an rds and csv in the 'processed-data' folder.
 ## Exploratory Analysis
 
 We use our exploratory analysis to determine the distribution of our predictors, including the socioeconomic variables that we chose for analysis.
+The overall distribution of each factor variable is shown below.
+![Table 1.]
 The distribution of the numerical income to poverty ratio can be shown below.
 It displays a value from 1-3.
 A ratio displaying less than 1 depicts an income less than the poverty level.Any income ratio \>1 indicates an income greater than the poverty level.
 Most of the observations were gathered from households with income ratios of 3, as shown by the skewed plot below.
 
-![Figure 1. Income-poverty ratio distribution](../results/figures/income.png)
+![Figure 1. Income-poverty ratio distribution](./images/income.png)
 
 Nest, the distribution of surveys given per state was analyzed.
 The state variable shows a more uniformed distribution, suggesting that the observations were gathered fairly across the US states and territory.
 Although it is noted a few territories provides 0 observations.
-![Figure 2. State dsitribution](results/figures/state_distribution.png)
+![Figure 2. State distribution](./images/state.distribution.png)
 
 The family income variable provides a more normal distribution with the majority of the observation coming from \$75000+ income level.
-![Figure 3. The family income distribution](results/figures/family.income.distribution.png)
+![Figure 3. The family income distribution](./images/family.income.distribution.png)
 
 The race and ethnicity variables show a distribution that is similar to the U.S. census data, which concludes that the racial composition of the U.S. is 58.9% white, 13.6% African American, and 19.1% Hispanic or Latino.
 
-![Figure 4.Racial distribution](results/figures/race.distribution.png) ![Figure 5.Ethnicity distribution](results/figures/ethnicity.distribution.png)
+![Figure 4.Racial distribution](./images/race.distribution.png)
+
+![Figure 5.Ethnicity distribution](./images/ethnicity.distribution.png)
 
 The Insurance status variable shows that the majority of the observations came from households with private insurance only.
 This is followed by any medicaid and then other insurance.
 This is mirrored in the facility variable, where a majority of its observations show private facilities being the location.
-![Figure 6. Insurance status distribution](results/figures/insurance.status.distribution.png) ![Figure 7. Distribution of the medical facility where the survey was administerred](results/figures/facility.distribution.png)
+![Figure 6. Insurance status distribution](./images/insurance.status.distribution.png) ![Figure 7. Distribution of the medical facility where the survey was administerred](./images/facility.distribution.png)
 
 The vaccination variable indicates nearly 80% of the observations had an Up-to-date status for the 1+ shot HPV vaccination.
 We will follow by examining the percentage of up-to-date vaccination status by state.
 
-![Figure 8. Vaccine status distribution](../results/figures/State-vaccine-completion.png)
+![Table 2. Vaccine status distribution](./images/state-vaccine-completion.png)
 
 We examine the facility that submitted the survey, which is stratified by the vaccine completion status of the survey subject.
 
-![Figure 9.Facility and vaccine completion distribution](results/figures/facility-vaccination.png)
+![Figure 8.Facility and vaccine completion distribution](./images/facility-vaccination.png)
 
 We examine the percentage of vaccination completion by race and ethnicity.
 Because there are different counts of each race/ethnicity for each factor level, the percentage of those with up-to-date vaccine status out of each race/ethnicity level was determined.
 This adjusts for the different counts in each racial category.
 The Hispanic ethnicity was found to have the highest vaccine completion while non-hispanic white has the lowest.
 
-![Figure 10. Distribution of vaccine completion stratified by race and ethnicity](results/figures/race-ethnicity-vaccination.png)
+![Figure 9. Distribution of vaccine completion stratified by race and ethnicity](./images/raceeth-income-stratified.png)
 
 ## Model and Plot Fitting
 
@@ -148,14 +152,14 @@ The box plot indicates little difference between the two status.
 A statistical model is fitted to the same variables.
 A p-value of 0.1358 suggests there is little significance between the income-poverty variable and the vaccination status.
 
-![Figure 11.](figures/results/income-vaccination.png)
+![Figure 10.](./images/income-vaccination.png)
 
 A boxplot is created with income-poverty ratio to insurance status.
 The box plot indicates there are distinct difference between the two status.
 A statistical model is fitted to the same variables.
 The p-value of \< 2.26e-16 suggests there is statistical significance between the income-poverty variable and the insurance status.
 
-![Figure 12. Income poverty ratio and insurance status](results/figures/insurance-income-stratified.png)
+![Figure 11. Income poverty ratio and insurance status](./images/insurance-income-stratified.png)
 
 Income-poverty ratio was fit to vaccine status and insurance status in a multi-linear model.
 
@@ -164,9 +168,11 @@ A lower income-poverty ratio means the group is closer to the poverty line.
 For the non-Hispanic black and Hispanic racial and ethnic groups, vaccine completion corresponded with a lower mean income-poverty ratio.
 For mixed ethnic groups, vaccine completion corresponded with a higher mean income-poverty ratio.
 
-![Figure 14. Income-poverty level versus ethnic group](results/figures/raceeth-income-stratified.png)
+![Figure 12. Income-poverty level versus ethnic group](./images/raceeth-income-stratified.png)
 
-{{< pagebreak >}} \# Analysis
+{{< pagebreak >}} 
+
+# Analysis
 
 We begin with various socioeconomic predictors that interest us.
 Some of these predictors are a subset of the other, or may be used to describe an overall category.
