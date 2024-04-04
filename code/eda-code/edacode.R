@@ -25,23 +25,25 @@ saveRDS(summary_df, file = summarytable_file)
 
 # Select columns for a summary table
 table_vars <- mydata %>%
-  select(P_UTDHPV, AGE, SEX, INS_STAT2_I, INCPOV1, RACEETHK, EDUC1, LANGUAGE, RENT_OWN)%>%
-  filter(SEX %in% c("MALE", "FEMALE"))%>%
-  filter(INS_STAT2_I %in% c("PRIVATE INSURANCE ONLY", "ANY MEDICAID", "OTHER INSURANCE (CHIP, IHS, MILITARY, OR OTHER, ALONE OR IN COMB. WITH PRIVATE INSURANCE)", "UNINSURED"))
+  select(P_UTDHPV, AGE, SEX, INS_STAT2_I, INCPOV1, RACEETHK, EDUC1, LANGUAGE, RENT_OWN)
+table_vars$SEX <- droplevels(table_vars$SEX, exclude = c("DON'T KNOW", "MISSING IN ERROR", "REFUSED"))
+table_vars$INS_STAT2_I <- droplevels(table_vars$INS_STAT2_I, exclude = "MISSING Data")
 
 # Create Table 1 (study sample characteristics) from the data
-table1 <- table_vars %>% tbl_summary(by = P_UTDHPV, 
-                                 statistic = list(all_categorical() ~ "{n} ({p}%)"),
-                                 label = c(AGE ~ "Age (years)", 
-                                           SEX ~ "Sex",   
-                                           INS_STAT2_I ~ "Insurance Status", 
-                                           INCPOV1 ~ "Poverty Status",      
-                                           RACEETHK ~ "Race and Ethnicity", 
-                                           EDUC1 ~ "Maternal Education-level",
-                                           LANGUAGE ~ "Survey Language",
-                                           RENT_OWN ~ "Housing Status"))%>%
+table1 <- table_vars %>% 
+  tbl_summary(by = P_UTDHPV,  
+              statistic = list(all_categorical() ~ "{n} ({p}%)"),
+              label = c(AGE ~ "Age (years)", 
+                        SEX ~ "Sex",   
+                        INS_STAT2_I ~ "Insurance Status", 
+                        INCPOV1 ~ "Poverty Status",      
+                        RACEETHK ~ "Race and Ethnicity", 
+                        EDUC1 ~ "Maternal Education-level",
+                        LANGUAGE ~ "Survey Language",
+                        RENT_OWN ~ "Housing Status"), 
+              missing = "no"
+  ) %>%
   modify_caption("Table 1. Socioeconomic characteristics of U.S. teenagers who have completed or are up-to-date with HPV vaccination series.")
-
 table1
 
 # Save the summary table

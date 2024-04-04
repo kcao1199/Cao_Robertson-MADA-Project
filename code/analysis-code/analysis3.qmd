@@ -1,0 +1,78 @@
+---
+title: "Data Analysis and Modelling of Teen Vaccination Surveys"
+date: '`r format(Sys.Date())`'
+Author: Kelly Cao and Rachel Robertson
+output: html_document
+editor: 
+  markdown: 
+    wrap: sentence
+---
+# LASSO using Tidymodels
+We will start by openning the libraries that we will need for creating a LASSO regression model for the data
+```{r}
+library(tidymodels) # use tidymodels framework
+library(ggplot2) # producing visual displays of data
+library(dplyr) # manipulating and cleaning data
+library(here) # making relative pathways
+library(glmnet) # for LASSO regression engine
+library(doParallel) # for parallel processing
+library(rsample) # for cross validation
+```
+
+Now, we will load the preprocessed data.
+```{r}
+# Load and preprocess data
+data_location <- here::here("data","processed-data","cleandata1.rds")
+mydata <- readRDS(data_location)
+
+# Remove rows with missing values
+mydata$SEX <- droplevels(mydata$SEX, exclude = c("DON'T KNOW", "MISSING IN ERROR", "REFUSED"))
+mydata$INS_STAT2_I <- droplevels(mydata$INS_STAT2_I, exclude = "MISSING Data")
+mydata$STATE <- droplevels(mydata$STATE, exclude = "Missing Data")
+mydata$MOBIL_1 <- droplevels(mydata$MOBIL_1, exclude = c("DON'T KNOW", "MISSING IN ERROR", "REFUSED"))
+mydata$FACILTY <- droplevels(mydata$FACILITY, exclude = "Missing Data")
+mydata$P_UTDHPV <- droplevels(mydata$P_UTDHPV, exclude = "Missing Data")
+```
+Next, we will split the data into training and testing groups so that the LASSO regression has a comparison group.
+```{r}
+# Split data into training and testing datasets
+set.seed(123) # seed for reproducibility
+split_data <- initial_split(mydata, prop = 0.8) # 80% split for training/testing data
+train_data <- training(split_data)
+test_data <- testing(split_data)
+```
+Next, we will specify the LASSO recipe, or the regression formula. This will contain the predictors of interest used for previous analysis.
+```{r}
+# Create recipe containing predictors of interest
+lasso_rec <- recipe( P_UTDHPV ~ AGE + SEX + STATE + INS_STAT2_I + INCQ298A + INS_BREAK_I + INCPOV1 + RACEETHK + EDUC1 + LANGUAGE + MOBIL_1 + RENT_OWN + FACILITY, data = train_data) %>%
+  step_dummy(all_nominal(), -all_outcomes())  %>%
+  step_rm(all_outcomes(), -all_outcomes())
+
+# Prepare the recipe
+lasso_prep <- lasso_rec %>%
+  prep()
+```
+Now I will impliment the function. This involves setting the specific LASSO regression engine, creating a workflow, and then extracting the fit of the model.
+```{r}
+# Specify logistic regression model
+lasso_spec <- logistic_reg(penalty = 0.05, mixture = 1) %>%
+  set_engine("glmnet")
+
+# Create workflow
+lasso_wf <- workflow() %>%
+  add_recipe(lasso_rec)
+
+# Fit the model using training data
+lasso_fit <- lasso_wf %>%
+  add_model(lasso_spec) %>%
+  fit(data = train_data)
+
+# Extract and tidy model parameters
+lasso_fit %>%
+  extract_fit_parsnip() %>%
+  tidy()
+```
+  
+Hi Kelly, I am confused because only the intercept has an estimate, while every other factor is zero. I wonder if maybe the penalty is too high? I am not sure how to fix this.
+
+# Tuning LASSO model
