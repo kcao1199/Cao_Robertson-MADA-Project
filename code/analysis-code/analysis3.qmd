@@ -1,5 +1,5 @@
 ---
-title: "Data Analysis and Modelling of Teen Vaccination Surveys"
+title: "Data Analysis and Modeling of Teen Vaccination Surveys"
 date: '`r format(Sys.Date())`'
 Author: Kelly Cao and Rachel Robertson
 output: html_document
@@ -8,7 +8,10 @@ editor:
     wrap: sentence
 ---
 # LASSO using Tidymodels
-We will start by openning the libraries that we will need for creating a LASSO regression model for the data
+```{r setup, include=FALSE} 
+knitr::opts_chunk$set(warning = FALSE, message = FALSE) 
+```
+We will start by opening the libraries that we will need for creating a LASSO regression model for the data
 ```{r}
 library(tidymodels) # use tidymodels framework
 library(ggplot2) # producing visual displays of data
@@ -17,6 +20,9 @@ library(here) # making relative pathways
 library(glmnet) # for LASSO regression engine
 library(doParallel) # for parallel processing
 library(rsample) # for cross validation
+library(yardstick) # for metrics
+library(mlbench)
+
 ```
 
 Now, we will load the preprocessed data.
@@ -41,18 +47,18 @@ split_data <- initial_split(mydata, prop = 0.8) # 80% split for training/testing
 train_data <- training(split_data)
 test_data <- testing(split_data)
 ```
-Next, we will specify the LASSO recipe, or the regression formula. This will contain the predictors of interest used for previous analysis.
+Next, we will specify the LASSO recipe, or the regression formula. This will contain the predictors of interest used for previous analysis and `P_UTDHPV` as the outcome. 
 ```{r}
 # Create recipe containing predictors of interest
 lasso_rec <- recipe( P_UTDHPV ~ AGE + SEX + STATE + INS_STAT2_I + INCQ298A + INS_BREAK_I + INCPOV1 + RACEETHK + EDUC1 + LANGUAGE + MOBIL_1 + RENT_OWN + FACILITY, data = train_data) %>%
-  step_dummy(all_nominal(), -all_outcomes())  %>%
-  step_rm(all_outcomes(), -all_outcomes())
+  step_dummy(all_nominal(), -all_outcomes())  %>% # convert categorical variables (nominal) into dummy variables
+  step_rm(all_outcomes(), -all_outcomes()) #remove the outcome variables from the dataset
 
 # Prepare the recipe
 lasso_prep <- lasso_rec %>%
   prep()
 ```
-Now I will impliment the function. This involves setting the specific LASSO regression engine, creating a workflow, and then extracting the fit of the model.
+Now I will implement the function. This involves setting the specific LASSO regression engine, creating a workflow, and then extracting the fit of the model.
 ```{r}
 # Specify logistic regression model
 lasso_spec <- logistic_reg(penalty = 0.05, mixture = 1) %>%
@@ -71,8 +77,130 @@ lasso_fit <- lasso_wf %>%
 lasso_fit %>%
   extract_fit_parsnip() %>%
   tidy()
+
+# Extract and tidy model parameters
+lasso_coef <- lasso_fit %>%
+  extract_fit_parsnip() %>%
+  tidy()
+
+# Filter out predictors with non-zero coefficients
+lasso_nonzero_coef <- lasso_coef %>%
+  filter(estimate != 0)
+
+# View the remaining predictors with non-zero coefficients
+num_observations <- nrow(lasso_nonzero_coef)
+print(num_observations)
+
 ```
   
-Hi Kelly, I am confused because only the intercept has an estimate, while every other factor is zero. I wonder if maybe the penalty is too high? I am not sure how to fix this.
+It seems like the LASSO model is penalizing the coefficients too heavily, resulting in most of them being shrunk to zero. We are going to try lowering the penalty parameter (penalty) to see if it is effective in solving our problem.
+
+```{r}
+# Specify logistic regression model
+lasso_spec <- logistic_reg(penalty = 0.005, mixture = 1) %>%
+  set_engine("glmnet")
+
+# Create workflow
+lasso_wf <- workflow() %>%
+  add_recipe(lasso_rec)
+
+# Fit the model using training data
+lasso_fit <- lasso_wf %>%
+  add_model(lasso_spec) %>%
+  fit(data = train_data)
+
+# Extract and tidy model parameters
+lasso_fit %>%
+  extract_fit_parsnip() %>%
+  tidy()
+
+# Extract and tidy model parameters
+lasso_coef <- lasso_fit %>%
+  extract_fit_parsnip() %>%
+  tidy()
+
+# Filter out predictors with non-zero coefficients
+lasso_nonzero_coef <- lasso_coef %>%
+  filter(estimate != 0)
+
+# View the remaining predictors with non-zero coefficients
+num_observations <- nrow(lasso_nonzero_coef)
+print(num_observations)
+
+```
+
+```{r}
+# Generate predictions
+predictions <- lasso_fit %>%
+  predict(new_data = mydata) %>%
+  bind_cols(mydata)
+
+# Calculate ROC AUC
+predictions %>%
+  mutate(predicted_numeric = as.numeric(.pred_class)) %>%
+  roc_auc(P_UTDHPV, predicted_numeric)
+
+# Generate predictions
+predictions2 <- lasso_fit %>%
+  predict(new_data = train_data) %>%
+  bind_cols(train_data)
+
+# Calculate ROC AUC
+predictions2 %>%
+  mutate(predicted_numeric = as.numeric(.pred_class)) %>%
+  roc_auc(P_UTDHPV, predicted_numeric)
+
+
+```
+When attempting to determine how lowering the penalty effected the ability of the model, we produced some predictions with both the original data set and training data, both performed fairly poorly, with a ROC_AUC score close to 0.5, suggesting the the model created predictions that were comparable to random. 
+
+To determine the ideal penalty, we are going to tune the model. 
 
 # Tuning LASSO model
+Any penalty above 0.05 resulted in all of the predictor coefficient reduced to zero. When performing the following tuning, I set the penalty grid from 0.001 to 0.05. 
+```{r}
+# Define a grid of penalty values to tune over
+penalty_grid <- expand.grid(penalty = seq(0.001, 0.05, length.out = 20))
+
+# Set up parallel processing for faster tuning
+registerDoParallel()
+
+# LASSO model specification
+lasso_model_tuned <- 
+  logistic_reg(penalty = tune(), mixture = 1) %>%
+  set_engine("glmnet") %>%
+  set_mode("classification")  # Ensure correct mode for classification problem
+
+# LASSO Workflow
+lasso_workflow_tuned <- 
+  workflow() %>%
+  add_model(lasso_model_tuned) %>%
+  add_recipe(lasso_rec)
+
+# Set up the grid for tuning
+lasso_tuned <- 
+  lasso_workflow_tuned %>%
+  tune_grid(
+    resamples = vfold_cv(train_data, v = 5, repeats = 5), 
+    grid = penalty_grid,
+    control = control_grid(verbose = TRUE)
+  )
+
+# View tuning results
+tuned_plot <- autoplot(lasso_tuned)
+tuned_plot + ggtitle( "Tuned LASSO Model")
+
+# Collect tuning results
+tuning_results <- lasso_tuned %>%
+  collect_metrics()
+
+# Filter for ROC AUC metric
+roc_auc <- tuning_results %>%
+  filter(.metric == "roc_auc")
+
+# View the ROC AUC values
+print(roc_auc)
+
+```
+
+When viewing the metrics of the tuning, we can see that the regularization is directly correlated with the reduction in roc_auc and accuracy and the increase in brier_Class. The accuracy is later shown to start increasing suggesting underfitting starts occurring around 0.01. Just reviewing the roc_auc alone, the best performance occurs when the penalty is at its lowest. 
