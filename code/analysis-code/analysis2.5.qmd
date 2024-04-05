@@ -1,0 +1,97 @@
+---
+title: "Data Analysis and Modeling of Teen Vaccination Surveys"
+date: '`r format(Sys.Date())`'
+Author: Kelly Cao and Rachel Robertson
+output: html_document
+editor: 
+  markdown: 
+    wrap: sentence
+---
+# Random Forest Model
+```{r}
+library(tidymodels) # use tidymodels framework.
+library(ggplot2) # producing visual displays of data
+library(dplyr) # manipulating and cleaning data
+library(here) # making relative pathways
+library(randomForest) # making random forest model
+library(doParallel) # for parallel processing
+library(rsample) # for cross validation
+```
+
+```{r}
+# Load and preprocess data
+data_location <- here::here("data","processed-data","cleandata1.rds")
+mydata <- readRDS(data_location)
+
+# Remove rows with missing values
+mydata$SEX <- droplevels(mydata$SEX, exclude = c("DON'T KNOW", "MISSING IN ERROR", "REFUSED"))
+mydata$INS_STAT2_I <- droplevels(mydata$INS_STAT2_I, exclude = "MISSING Data")
+mydata$STATE <- droplevels(mydata$STATE, exclude = "Missing Data")
+mydata$MOBIL_1 <- droplevels(mydata$MOBIL_1, exclude = c("DON'T KNOW", "MISSING IN ERROR", "REFUSED"))
+mydata$FACILTY <- droplevels(mydata$FACILITY, exclude = "Missing Data")
+mydata$P_UTDHPV <- droplevels(mydata$P_UTDHPV, exclude = "Missing Data")
+```
+
+```{r}
+# Split data into training and testing datasets
+set.seed(123) # seed for reproducibility
+split_data <- initial_split(mydata, prop = 0.8) # 80% split for training/testing data
+train_data <- training(split_data)
+test_data <- testing(split_data)
+```
+
+```{r}
+rf_rec <- recipe(P_UTDHPV ~ AGE + SEX + STATE + INS_STAT2_I + INCQ298A + INS_BREAK_I + INCPOV1 + RACEETHK + EDUC1 + LANGUAGE + MOBIL_1 + RENT_OWN + FACILITY, data = train_data) # use full model as recipe for the random forest model
+
+rf_model <- rand_forest()%>% # use rand_forest() to make a random forest model
+  set_engine("randomForest", seed = 123)%>%
+  set_mode("classification")
+
+rf_workflow <- workflow() %>% # create workflow for rf model
+  add_recipe(rf_rec)%>% # apply recipe
+  add_model(rf_model) # apply model
+
+rf_fit <- rf_workflow%>%
+  fit(data = test_data)%>% # use the workflow to fit the rf model to the data
+print(rf_fit)
+```
+
+```{r}
+
+tune_spec <- 
+  rand_forest(
+    mtry = tune(), # parameters of random forest model to tune are the mtry, trees, and min_n
+    trees = 50,
+    min_n = tune()) %>% 
+  set_engine("randomForest", seed = 123) %>% # make sure to set seed again for the tree
+  set_mode("classification")
+
+## I used ChatGPT to help me define the tree grid for the parameters mtry and min_n
+tree_grid <- grid_regular(mtry(range = c(1, 4)), 
+                          min_n(range = c(1, 5)),
+                          levels = 6)
+
+rf_tune_wf <- workflow() %>% # create workflow
+  add_recipe(rf_rec) %>% # add recipe from earlier
+  add_model(tune_spec) # add spec that is defined above
+
+folds_data <- vfold_cv(test_data, v=5 )
+# Set the number of cores to use
+num_cores <- detectCores() - 1
+
+# Initialize parallel backend
+doParallel::registerDoParallel(cores = num_cores)
+
+set.seed(123) # set seed for reproducibility
+
+rf_res <- rf_tune_wf %>%
+  tune_grid(
+    resamples = folds_data, # use data from the CV folds
+    grid = tree_grid)
+rf_res %>%
+  autoplot()
+
+# Stop parallel processing
+stopImplicitCluster()
+```
+

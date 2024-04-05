@@ -50,7 +50,7 @@ test_data <- testing(split_data)
 Next, we will specify the LASSO recipe, or the regression formula. This will contain the predictors of interest used for previous analysis and `P_UTDHPV` as the outcome. 
 ```{r}
 # Create recipe containing predictors of interest
-lasso_rec <- recipe( P_UTDHPV ~ AGE + SEX + STATE + INS_STAT2_I + INCQ298A + INS_BREAK_I + INCPOV1 + RACEETHK + EDUC1 + LANGUAGE + MOBIL_1 + RENT_OWN + FACILITY, data = train_data) %>%
+lasso_rec <- recipe(P_UTDHPV ~ AGE + SEX + STATE + INS_STAT2_I + INCQ298A + INS_BREAK_I + INCPOV1 + RACEETHK + EDUC1 + LANGUAGE + MOBIL_1 + RENT_OWN + FACILITY, data = train_data) %>%
   step_dummy(all_nominal(), -all_outcomes())  %>% # convert categorical variables (nominal) into dummy variables
   step_rm(all_outcomes(), -all_outcomes()) #remove the outcome variables from the dataset
 
@@ -97,25 +97,21 @@ It seems like the LASSO model is penalizing the coefficients too heavily, result
 
 ```{r}
 # Specify logistic regression model
-lasso_spec <- logistic_reg(penalty = 0.005, mixture = 1) %>%
+lasso_spec2 <- logistic_reg(penalty = 0.005, mixture = 1) %>%
   set_engine("glmnet")
 
-# Create workflow
-lasso_wf <- workflow() %>%
-  add_recipe(lasso_rec)
-
 # Fit the model using training data
-lasso_fit <- lasso_wf %>%
-  add_model(lasso_spec) %>%
+lasso_fit2 <- lasso_wf %>%
+  add_model(lasso_spec2) %>%
   fit(data = train_data)
 
 # Extract and tidy model parameters
-lasso_fit %>%
+lasso_fit2 %>%
   extract_fit_parsnip() %>%
   tidy()
 
 # Extract and tidy model parameters
-lasso_coef <- lasso_fit %>%
+lasso_coef <- lasso_fit2 %>%
   extract_fit_parsnip() %>%
   tidy()
 
@@ -130,29 +126,26 @@ print(num_observations)
 ```
 
 ```{r}
-# Generate predictions
+# Make predictions for the first LASSO model
 predictions <- lasso_fit %>%
-  predict(new_data = mydata) %>%
-  bind_cols(mydata)
+  augment(new_data = test_data)
 
 # Calculate ROC AUC
-predictions %>%
-  mutate(predicted_numeric = as.numeric(.pred_class)) %>%
-  roc_auc(P_UTDHPV, predicted_numeric)
+roc_auc <- predictions %>%
+  roc_auc(truth = P_UTDHPV, .pred_UTD)
+print(roc_auc)
 
-# Generate predictions
-predictions2 <- lasso_fit %>%
-  predict(new_data = train_data) %>%
-  bind_cols(train_data)
+# Make predictions for the LASSO model with lower penalty
+predictions2 <- lasso_fit2 %>%
+  augment(new_data = test_data)
 
 # Calculate ROC AUC
-predictions2 %>%
-  mutate(predicted_numeric = as.numeric(.pred_class)) %>%
-  roc_auc(P_UTDHPV, predicted_numeric)
-
+roc_auc <- predictions2 %>%
+  roc_auc(truth = P_UTDHPV, .pred_UTD)
+print(roc_auc)
 
 ```
-When attempting to determine how lowering the penalty effected the ability of the model, we produced some predictions with both the original data set and training data, both performed fairly poorly, with a ROC_AUC score close to 0.5, suggesting the the model created predictions that were comparable to random. 
+When attempting to determine how lowering the penalty effected the ability of the model, we produced some predictions for the model with a higher penalty and the model with a very low penalty. Lowering the penalty from 0.05 to 0.005 improved the ROC AUC to from 0.5 to 0.37. This suggests that the second model is more informative. However, to improve the model further, we should find the ideal penalty parameter.
 
 To determine the ideal penalty, we are going to tune the model. 
 
@@ -203,4 +196,75 @@ print(roc_auc)
 
 ```
 
-When viewing the metrics of the tuning, we can see that the regularization is directly correlated with the reduction in roc_auc and accuracy and the increase in brier_Class. The accuracy is later shown to start increasing suggesting underfitting starts occurring around 0.01. Just reviewing the roc_auc alone, the best performance occurs when the penalty is at its lowest. 
+When viewing the metrics of the tuning, we can see that the regularization is directly correlated with the reduction in roc_auc and accuracy and the increase in brier_Class. The accuracy is later shown to start increasing suggesting underfitting starts occurring around 0.01. Just reviewing the roc_auc alone, the best performance occurs when the penalty is at its lowest.
+
+(**Rachel redundantly added code that does the same thing. We can choose our favorite of the two next time we meet.**)
+I will now tune the penalty parameter using cross validation to find the penalty with the best roc_auc.
+```{r}
+lasso_penalty <- logistic_reg(penalty = tune(), mixture = 1) %>%
+  set_engine("glmnet")
+
+folds <- rsample::vfold_cv(train_data, v = 5)
+tune_grid <- tibble(penalty = 10^seq(-2, -1, length.out = 10))
+
+wf <- workflow() %>%
+  add_recipe(lasso_rec)%>%
+  add_model(lasso_penalty)
+
+tune_wf <- wf %>% 
+  tune_grid(resamples = folds,
+            grid = tune_grid,
+            control = control_grid(verbose = FALSE, save_pred = TRUE),
+            metrics = metric_set(roc_auc))
+
+# Select the best model based on ROC AUC
+best_mod <- tune_wf %>% 
+  select_best(metric = "roc_auc")
+
+final_wf <- finalize_workflow(wf, best_mod)
+print(final_wf)
+```
+
+# LASSO Re-fit
+Now, we will run the LASSO regression again, but with the tuned penalty parameter of 0.01. 
+```{r}
+# Specify logistic regression model
+lasso_spec3 <- logistic_reg(penalty = 0.01, mixture = 1) %>%
+  set_engine("glmnet")
+
+# Fit the model using training data
+lasso_fit3 <- lasso_wf %>%
+  add_model(lasso_spec3) %>%
+  fit(data = train_data)
+
+# Extract and tidy model parameters
+lasso_fit3 %>%
+  extract_fit_parsnip() %>%
+  tidy()
+
+# Extract and tidy model parameters
+lasso_coef <- lasso_fit3 %>%
+  extract_fit_parsnip() %>%
+  tidy()
+
+# Filter out predictors with non-zero coefficients
+lasso_nonzero_coef <- lasso_coef %>%
+  filter(estimate != 0)
+
+# View the remaining predictors with non-zero coefficients
+num_observations <- nrow(lasso_nonzero_coef)
+print(num_observations)
+
+# Make predictions for ROC_AUC with the tuned model
+predictions3 <- lasso_fit3 %>%
+  augment(new_data = test_data)
+
+# Calculate ROC AUC
+roc_auc <- predictions3 %>%
+  roc_auc(truth = P_UTDHPV, .pred_UTD)
+print(roc_auc)
+```
+The ROC_AUC for this model with a penalty parameter of 0.01 is now 0.39. This is slightly worse than the model with a penalty of 0.05. However, the model with a lower penalty is more "unstable", so doing cross validation for the ROC_AUC may reveal which model is truly ideal. 
+
+# Cross Validation
+Now we will compare the two lasso models with the penalty parameters of 0.005 and 0.01 to determine which model performs best when presented with "new data".

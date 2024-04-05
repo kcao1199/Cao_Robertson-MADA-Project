@@ -1,0 +1,10 @@
+---
+title: "Data Analysis and Modeling of Teen Vaccination Surveys"
+date: '`r format(Sys.Date())`'
+Author: Kelly Cao and Rachel Robertson
+output: html_document
+editor: 
+  markdown: 
+    wrap: sentence
+---
+# Ridge Regression
