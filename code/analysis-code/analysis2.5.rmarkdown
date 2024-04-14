@@ -7,7 +7,9 @@ editor:
   markdown: 
     wrap: sentence
 ---
+
 # Random Forest Model
+
 ```{r}
 library(tidymodels) # use tidymodels framework.
 library(ggplot2) # producing visual displays of data
@@ -56,7 +58,9 @@ rf_fit <- rf_workflow%>%
   fit(data = train_data)%>% # use the workflow to fit the rf model to the data
 print(rf_fit)
 ```
+
 Now, I will examine the performance of the base random forest model.
+
 ```{r}
 # Performance metrics of the first fit
 rf_aug <- augment(rf_fit, train_data) # augment to make predictions for rf_fit
@@ -65,9 +69,11 @@ metrics <- metric_set(accuracy, f_meas) # create a set of metrics to test for cl
 first_fit_metrics <- metrics(truth = P_UTDHPV, estimate = .pred_class, data = rf_aug) # calculate metrics for first fit
 print(first_fit_metrics)
 ```
+
 The accuracy of the model is fairly high, meaning that there it performs fairly when classifying the predictors in the model. However, the F1 score is relatively low which reflects low precision and recall of the model. To improve this we will tune the model.
 
 Now, I will continue by tuning the RF model using cross validation. I start with a smaller numer of trees and lower number of folds because my computer cannot computationally handle many trees or folds.
+
 ```{r}
 tune_spec <- 
   rand_forest(
@@ -105,6 +111,7 @@ rf_res %>%
 # Stop parallel processing
 stopImplicitCluster()
 ```
+
 ```{r}
 # Find the best values for the tuned metrics, mtry and min_n
 # find the ideal ROC_AUC metric for the rf tree
@@ -122,8 +129,10 @@ rf_res %>%
   facet_wrap(~parameter, scales = "free_x") +
   labs(x = NULL, y = "AUC")
 ```
+
 It seems that mtry is maximized between 100 and 150 and min_n is maximized between 1 and 5.
 We can use a grid search to tune within a range to determine which is the ideal parameter value.
+
 
 ```{r}
 # grid search tuning
@@ -150,7 +159,9 @@ rf_res2 %>%
 # Stop parallel processing
 stopImplicitCluster()
 ```
+
 From the plot, it seems that the ideal minimum node size (min_n) is 5 when the number of randomly selected predictors (mtry) is  140, when accuracy and ROC_AUC are both accounted for. We can check this using the select_best function.
+
 ```{r}
 # Specify the metric and optimization criteria
 best_auc <- select_best(rf_res2, metric = "roc_auc")
@@ -171,7 +182,9 @@ rf_tune_fit <- rf_tune_workflow%>%
   fit(data = train_data)%>% # use the workflow to fit the rf model to the data
 print(rf_fit)
 ```
+
 The final random forest model was selected to optimize roc_auc, but it also has a fairly high accuracy. We can use
+
 ```{r}
 # make predictions
 rf_tuned_aug <- augment(rf_tune_fit, train_data)
@@ -180,9 +193,11 @@ rf_tuned_aug <- augment(rf_tune_fit, train_data)
 tuned_fit_metrics <- metrics(truth = P_UTDHPV, estimate = .pred_class, data = rf_tuned_aug) # calculate metrics for first fit
 print(tuned_fit_metrics)
 ```
+
 The F1 measure has improved significantly, to 0.86 and the accuracy increased slightly, to 0.95.
 
 Now I will compare the model will the a single predictor model and the original fit to verify that there is improvement in the predicitons made.
+
 ```{r}
 # RF model compared to single predictor model
 ## Create a single model
@@ -202,7 +217,9 @@ rf_fit_null <- rf_workflow_null %>% # fit the null model
 # Get predictions from single predictor model
 rf_null_aug <- augment(rf_fit_null, train_data)
 ```
+
 Note to future self: You cannot plot the models on coordinates because the predicitons are classifications (not coninuous). Find another visual representation to compare the models.
+
 ```{r}
 # RF model performance on test data
 

@@ -1,14 +1,4 @@
----
-title: "Data Analysis and Modeling of Teen Vaccination Surveys"
-date: '`r format(Sys.Date())`'
-Author: Kelly Cao and Rachel Robertson
-output: html_document
-editor: 
-  markdown: 
-    wrap: sentence
----
-# Random Forest Model
-```{r}
+## ---- packages --------
 library(tidymodels) # use tidymodels framework.
 library(ggplot2) # producing visual displays of data
 library(dplyr) # manipulating and cleaning data
@@ -17,9 +7,8 @@ library(randomForest) # making random forest model
 library(doParallel) # for parallel processing
 library(rsample) # for cross validation
 library(yardstick)
-```
 
-```{r}
+## ---- load-data --------
 # Load and preprocess data
 data_location <- here::here("data","processed-data","cleandata1.rds")
 mydata <- readRDS(data_location)
@@ -31,17 +20,15 @@ mydata$STATE <- droplevels(mydata$STATE, exclude = "Missing Data")
 mydata$MOBIL_1 <- droplevels(mydata$MOBIL_1, exclude = c("DON'T KNOW", "MISSING IN ERROR", "REFUSED"))
 mydata$FACILTY <- droplevels(mydata$FACILITY, exclude = "Missing Data")
 mydata$P_UTDHPV <- droplevels(mydata$P_UTDHPV, exclude = "Missing Data")
-```
 
-```{r}
+## ---- split-data --------
 # Split data into training and testing datasets
 set.seed(123) # seed for reproducibility
 split_data <- initial_split(mydata, prop = 0.8) # 80% split for training/testing data
 train_data <- training(split_data)
 test_data <- testing(split_data)
-```
 
-```{r}
+## ---- first-fit --------
 rf_rec <- recipe(P_UTDHPV ~ AGE + SEX + STATE + INS_STAT2_I + INCQ298A + INS_BREAK_I + INCPOV1 + RACEETHK + EDUC1 + LANGUAGE + MOBIL_1 + RENT_OWN + FACILITY, data = train_data) # use full model as recipe for the random forest model
 
 rf_model <- rand_forest()%>% # use rand_forest() to make a random forest model
@@ -54,21 +41,17 @@ rf_workflow <- workflow() %>% # create workflow for rf model
 
 rf_fit <- rf_workflow%>%
   fit(data = train_data)%>% # use the workflow to fit the rf model to the data
-print(rf_fit)
-```
-Now, I will examine the performance of the base random forest model.
-```{r}
+  print(rf_fit)
+
+## ---- first-metrics --------
 # Performance metrics of the first fit
 rf_aug <- augment(rf_fit, train_data) # augment to make predictions for rf_fit
 
 metrics <- metric_set(accuracy, f_meas) # create a set of metrics to test for classification
 first_fit_metrics <- metrics(truth = P_UTDHPV, estimate = .pred_class, data = rf_aug) # calculate metrics for first fit
 print(first_fit_metrics)
-```
-The accuracy of the model is fairly high, meaning that there it performs fairly when classifying the predictors in the model. However, the F1 score is relatively low which reflects low precision and recall of the model. To improve this we will tune the model.
 
-Now, I will continue by tuning the RF model using cross validation. I start with a smaller numer of trees and lower number of folds because my computer cannot computationally handle many trees or folds.
-```{r}
+## ---- tune --------
 tune_spec <- 
   rand_forest(
     mtry = tune(), # parameters of random forest model to tune are the mtry, trees, and min_n
@@ -104,28 +87,23 @@ rf_res %>%
 
 # Stop parallel processing
 stopImplicitCluster()
-```
-```{r}
-# Find the best values for the tuned metrics, mtry and min_n
-# find the ideal ROC_AUC metric for the rf tree
+
+## ---- tune-metrics --------
 rf_res %>%
   collect_metrics() %>% # get metrics from the rf model created
   filter(.metric == "roc_auc") %>% # filter for the roc auc metric
   select(mean, min_n, mtry) %>% # select the columsn for mean, min_n and mtry
   pivot_longer(min_n:mtry,
-    values_to = "value",
-    names_to = "parameter"
+               values_to = "value",
+               names_to = "parameter"
   ) %>%
-# Plot the ROC_AUC to find the ideal min_n and mtry
+  # Plot the ROC_AUC to find the ideal min_n and mtry
   ggplot(aes(value, mean, color = parameter)) +
   geom_point(show.legend = FALSE) +
   facet_wrap(~parameter, scales = "free_x") +
   labs(x = NULL, y = "AUC")
-```
-It seems that mtry is maximized between 100 and 150 and min_n is maximized between 1 and 5.
-We can use a grid search to tune within a range to determine which is the ideal parameter value.
 
-```{r}
+## ---- grid-search --------
 # grid search tuning
 rf_tune_grid <- grid_regular( #define a grid with a range for mtry and min_n
   mtry(range = c(100, 150)),
@@ -149,9 +127,8 @@ rf_res2 %>%
 
 # Stop parallel processing
 stopImplicitCluster()
-```
-From the plot, it seems that the ideal minimum node size (min_n) is 5 when the number of randomly selected predictors (mtry) is  140, when accuracy and ROC_AUC are both accounted for. We can check this using the select_best function.
-```{r}
+
+## ---- tune-fit --------
 # Specify the metric and optimization criteria
 best_auc <- select_best(rf_res2, metric = "roc_auc")
 
@@ -163,27 +140,24 @@ final_rf <- finalize_model( # select the best model based on roc_auc
 # fit the tuned model
 rf_rec <- recipe(P_UTDHPV ~ AGE + SEX + STATE + INS_STAT2_I + INCQ298A + INS_BREAK_I + INCPOV1 + RACEETHK + EDUC1 + LANGUAGE + MOBIL_1 + RENT_OWN + FACILITY, data = train_data) # use full model as recipe for the random forest model
 
-rf_tune_workflow <- workflow() %>% # create workflow for rf model
+
+rf_workflow <- workflow() %>% # create workflow for rf model
   add_recipe(rf_rec)%>% # apply recipe
   add_model(final_rf) # apply model
 
-rf_tune_fit <- rf_tune_workflow%>%
+rf_fit <- rf_workflow%>%
   fit(data = train_data)%>% # use the workflow to fit the rf model to the data
-print(rf_fit)
-```
-The final random forest model was selected to optimize roc_auc, but it also has a fairly high accuracy. We can use
-```{r}
+  print(rf_fit)
+
+## ---- tune_metrics --------
 # make predictions
 rf_tuned_aug <- augment(rf_tune_fit, train_data)
 
 # find metrics for tuned fit
 tuned_fit_metrics <- metrics(truth = P_UTDHPV, estimate = .pred_class, data = rf_tuned_aug) # calculate metrics for first fit
 print(tuned_fit_metrics)
-```
-The F1 measure has improved significantly, to 0.86 and the accuracy increased slightly, to 0.95.
 
-Now I will compare the model will the a single predictor model and the original fit to verify that there is improvement in the predicitons made.
-```{r}
+## ---- null-model --------
 # RF model compared to single predictor model
 ## Create a single model
 rf_rec_null <- recipe(P_UTDHPV ~ SEX, data = train_data) # specify the model with a recipe; I could not get a null model to work so I used one predictor as a minimal model for comparison
@@ -201,9 +175,3 @@ rf_fit_null <- rf_workflow_null %>% # fit the null model
 
 # Get predictions from single predictor model
 rf_null_aug <- augment(rf_fit_null, train_data)
-```
-Note to future self: You cannot plot the models on coordinates because the predicitons are classifications (not coninuous). Find another visual representation to compare the models.
-```{r}
-# RF model performance on test data
-
-```
