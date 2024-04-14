@@ -6,6 +6,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
+<meta name="dcterms.date" content="2024-04-13">
 
 <title>Data Analysis and Modelling of Teen Vaccination Surveys</title>
 <style>
@@ -90,7 +91,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">Invalid Date</p>
+      <p class="date">April 13, 2024</p>
     </div>
   </div>
   
@@ -101,6 +102,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 <p>First, I will start by setting an equation for the generalized logistic regression model with all of the predictor variables intended for use.</p>
+<p>The model aims to predict the vaccination status (P_UTDHPV) based on various predictor variables like age, sex, state, insurance status, income, race/ethnicity, education, language, etc. The response variable P_UTDHPV represents whether a teenager is up-to-date on HPV vaccination.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Path to data. Note the use of the here() package and not absolute paths</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>data_location <span class="ot">&lt;-</span> here<span class="sc">::</span><span class="fu">here</span>(<span class="st">"data"</span>,<span class="st">"processed-data"</span>,<span class="st">"cleandata1.rds"</span>)</span>
@@ -120,11 +122,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>fitall <span class="ot">&lt;-</span> <span class="fu">glm</span>(P_UTDHPV <span class="sc">~</span> AGE <span class="sc">+</span> SEX <span class="sc">+</span> STATE <span class="sc">+</span> INS_STAT2_I <span class="sc">+</span> INCQ298A <span class="sc">+</span> INS_BREAK_I <span class="sc">+</span> INCPOV1 <span class="sc">+</span> RACEETHK <span class="sc">+</span> EDUC1 <span class="sc">+</span> LANGUAGE <span class="sc">+</span> MOBIL_1 <span class="sc">+</span> RENT_OWN <span class="sc">+</span> FACILITY, <span class="at">data =</span> mydata2, <span class="at">family =</span> binomial) <span class="co"># define the equation for the binomial logistic regression</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+<blockquote class="blockquote">
+<p>A Stepwise model comparison is performed to iteratively add or remove predictor variables based on their significance in improving the model fit.</p>
+</blockquote>
 <p>Now, I will set the start of the step-wise comparison, using a model with an intercept only (or blank model).</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>fitstart <span class="ot">&lt;-</span> <span class="fu">glm</span>(P_UTDHPV <span class="sc">~</span> <span class="dv">1</span>, <span class="at">data=</span>mydata2, <span class="at">family =</span> binomial)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>Now I will start the step-wise comparison in both the forwards and backwards direction to allow the model to add or drop predictors depending on the responding AIC value.</p>
+<p>Now I will start the step-wise comparison in both the forwards and backwards direction to allow the model to add or drop predictors depending on the responding AIC value. This is performed with the <code>step()</code> function, setting up the scope for the variables to consider.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">step</span>(fitstart, <span class="at">direction =</span> <span class="st">"both"</span>, <span class="at">scope =</span> <span class="fu">list</span>(<span class="at">lower =</span> <span class="sc">~</span><span class="dv">1</span>, <span class="at">upper =</span> <span class="sc">~</span> AGE <span class="sc">+</span> SEX <span class="sc">+</span> STATE <span class="sc">+</span> INS_STAT2_I <span class="sc">+</span> INCQ298A <span class="sc">+</span> INS_BREAK_I <span class="sc">+</span> INCPOV1 <span class="sc">+</span> RACEETHK <span class="sc">+</span> EDUC1 <span class="sc">+</span> LANGUAGE <span class="sc">+</span> MOBIL_1 <span class="sc">+</span> RENT_OWN <span class="sc">+</span> FACILITY), <span class="at">data =</span> mydata, <span class="at">family =</span> binomial) <span class="co"># define the lower and upper limits of the step wise comparison </span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
