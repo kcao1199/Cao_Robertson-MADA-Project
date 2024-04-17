@@ -72,7 +72,7 @@ residual_plot_logit <- residualPlotLogit(fitall)
 print(residual_plot_logit)
 
 ```
-The residual plot shows clear collinearity that is not represented by the current model. To find the predictors with collinnearity we will use a correlation matrix. This is because the VIF analysis will not run when multicollinearity is too high.
+The residual plot shows clear collinearity that is not represented by the current model. To find the predictors with multicollinearity, we will use a correlation matrix. This is because the VIF analysis will not run when multicollinearity is too high.
 ```{r}
 factor_data <- model.matrix(~ STATE + FACILITY + RACEETHK + AGE + EDUC1 + INS_BREAK_I + INCPOV1 + SEX + LANGUAGE + MOBIL_1 + INS_STAT2_I, data = mydata2)
 

@@ -23,6 +23,7 @@ library(MASS) # for robust regression
 library(caret) # for cross-validation
 library(h2o) #For dimension reduction
 library(dplyr) 
+library(rsample)
 
 ```
 
@@ -34,6 +35,17 @@ mydata <- readRDS(data_location)
 
 # Remove rows with missing values for the response variable
 mydata <- mydata[complete.cases(mydata$P_UTDHPV), ]
+
+# Set Seed for reproducibility
+rngseed = 1234
+set.seed(rngseed)
+
+# Create training data by alloting 3/4 of the data for training
+data_split <- initial_split(mydata, prop = 3/4)
+
+# Create data frames for the two sets:
+train_data <- training(data_split)
+test_data  <- testing(data_split)
 
 ```
 
@@ -54,8 +66,8 @@ The following lines are based on the resource shown below:
 # Start an H2O cluster
 h2o.init()
 
-# Convert mydata to H2OFrame
-mydata_h2o <- as.h2o(mydata)
+# Convert train_data to H2OFrame
+mydata_h2o <- as.h2o(train_data)
 
 # Perform PCA using h2o.prcomp
 pca_model <- h2o.prcomp(
@@ -126,6 +138,35 @@ print(cv_metrics)
 ```
 
 The cross-validation results for the logistic regression model show consistent performance across folds, with an average accuracy of approximately 79.4%. The model demonstrates stability with metrics such as an area under the curve (AUC) around 0.644 and a mean per-class error of about 49.8%. Precision and recall metrics also exhibit robustness, averaging around 79.6% and 99.6%, respectively. These results indicate the model's ability to balance correctly identifying positive cases while minimizing false positives. However, areas for model refinement include residual deviance and specificity.
+
+```{r}
+# Replicating the previous analysis with test data 
+
+# Convert train_data to H2OFrame
+mydata_h2o <- as.h2o(test_data)
+
+# Create a fold column for cross-validation
+fold_column <- h2o.kfold_column(data = mydata_h2o, nfolds = 10, seed = 1)  # Specify the number of folds and a seed for reproducibility
+
+# Add the fold column to the H2OFrame
+mydata_h2o <- h2o.cbind(mydata_h2o, fold_column)
+
+# Specify predictor variables
+predictor_columns <- c("AGE", "SEX", "STATE", "INS_STAT2_I", "INCQ298A", "INS_BREAK_I", 
+                       "INCPOV1", "RACEETHK", "EDUC1", "LANGUAGE", "MOBIL_1", "RENT_OWN", "FACILITY")
+
+# Evaluate model performance using cross-validation
+cv_metrics <- h2o.glm(x = predictor_columns, 
+                      y = "P_UTDHPV", 
+                      training_frame = mydata_h2o, 
+                      fold_column = "C1",  # Use the name of the fold column (default name is "C1")
+                      family = "binomial")
+
+# Display results
+print(cv_metrics)
+
+```
+
 
 ### Conclusion
 our analysis aimed to address collinearity issues in our teen vaccination surveys dataset through dimension reduction techniques like PCA and regularization methods such as LASSO regression. LASSO regression effectively selected important predictors while simplifying the model. Subsequent cross-validation demonstrated consistent model performance, with an average accuracy of 79.4% and robust precision and recall metrics. 
