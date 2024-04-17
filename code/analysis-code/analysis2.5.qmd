@@ -202,8 +202,4 @@ rf_fit_null <- rf_workflow_null %>% # fit the null model
 # Get predictions from single predictor model
 rf_null_aug <- augment(rf_fit_null, train_data)
 ```
-Note to future self: You cannot plot the models on coordinates because the predicitons are classifications (not coninuous). Find another visual representation to compare the models.
-```{r}
-# RF model performance on test data
-
-```
+Note to future self: You cannot plot the models on coordinates because the predictions are classifications (not coninuous). Find another visual representation to compare the models.

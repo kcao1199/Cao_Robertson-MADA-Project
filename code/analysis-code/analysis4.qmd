@@ -8,4 +8,8 @@ editor:
     wrap: sentence
 ---
 # Finding Best Model
-Comparing models 
+Comparing the previous three models used in analysis1.qmd, analysis2.5.qmd, and analysis4.qmd. These models include : general logistic regression model, Random Forest regression model, and LASSO regression model. 
+
+# Summary of the predictions and Metrics
+
+# Test Data 

@@ -198,33 +198,6 @@ print(roc_auc)
 
 When viewing the metrics of the tuning, we can see that the regularization is directly correlated with the reduction in roc_auc and accuracy and the increase in brier_Class. The accuracy is later shown to start increasing suggesting underfitting starts occurring around 0.01. Just reviewing the roc_auc alone, the best performance occurs when the penalty is at its lowest.
 
-(**Rachel redundantly added code that does the same thing. We can choose our favorite of the two next time we meet.**)
-I will now tune the penalty parameter using cross validation to find the penalty with the best roc_auc.
-```{r}
-lasso_penalty <- logistic_reg(penalty = tune(), mixture = 1) %>%
-  set_engine("glmnet")
-
-folds <- rsample::vfold_cv(train_data, v = 5)
-tune_grid <- tibble(penalty = 10^seq(-2, -1, length.out = 10))
-
-wf <- workflow() %>%
-  add_recipe(lasso_rec)%>%
-  add_model(lasso_penalty)
-
-tune_wf <- wf %>% 
-  tune_grid(resamples = folds,
-            grid = tune_grid,
-            control = control_grid(verbose = FALSE, save_pred = TRUE),
-            metrics = metric_set(roc_auc))
-
-# Select the best model based on ROC AUC
-best_mod <- tune_wf %>% 
-  select_best(metric = "roc_auc")
-
-final_wf <- finalize_workflow(wf, best_mod)
-print(final_wf)
-```
-
 # LASSO Re-fit
 Now, we will run the LASSO regression again, but with the tuned penalty parameter of 0.01. 
 ```{r}

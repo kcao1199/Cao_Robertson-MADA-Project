@@ -1,5 +1,7 @@
 This 'analysis-code' folder will contain the quarto documents, including both code and analysis commentary. Please run the .qmd files in numerical, starting with `analysis1.qmd` onwards. 
 
+analysis1.qmd: The initial 
+
 Notes to ourselves [ignore if reviewing this project]: 
 
 The reference files will be deleted for clarity. Review template for the references.
