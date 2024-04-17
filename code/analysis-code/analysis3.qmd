@@ -22,7 +22,7 @@ library(doParallel) # for parallel processing
 library(rsample) # for cross validation
 library(yardstick) # for metrics
 library(mlbench)
-
+library(vip)
 ```
 
 Now, we will load the preprocessed data.
@@ -128,7 +128,7 @@ print(num_observations)
 ```{r}
 # Make predictions for the first LASSO model
 predictions <- lasso_fit %>%
-  augment(new_data = test_data)
+  augment(new_data = train_data)
 
 # Calculate ROC AUC
 roc_auc <- predictions %>%
@@ -137,7 +137,7 @@ print(roc_auc)
 
 # Make predictions for the LASSO model with lower penalty
 predictions2 <- lasso_fit2 %>%
-  augment(new_data = test_data)
+  augment(new_data = train_data)
 
 # Calculate ROC AUC
 roc_auc <- predictions2 %>%
@@ -230,7 +230,7 @@ print(num_observations)
 
 # Make predictions for ROC_AUC with the tuned model
 predictions3 <- lasso_fit3 %>%
-  augment(new_data = test_data)
+  augment(new_data = train_data)
 
 # Calculate ROC AUC
 roc_auc <- predictions3 %>%
@@ -239,5 +239,49 @@ print(roc_auc)
 ```
 The ROC_AUC for this model with a penalty parameter of 0.01 is now 0.39. This is slightly worse than the model with a penalty of 0.05. However, the model with a lower penalty is more "unstable", so doing cross validation for the ROC_AUC may reveal which model is truly ideal. 
 
-# Cross Validation
-Now we will compare the two lasso models with the penalty parameters of 0.005 and 0.01 to determine which model performs best when presented with "new data".
+# Comparing Predictions
+Now we will compare the two lasso models with the penalty parameters of 0.005 and 0.01 to determine which model performs best when presented with "new data". The new data is that split from the original data (the test data). 
+```{r}
+pen1_aug <- augment(lasso_fit2, test_data)
+pen2_aug <- augment(lasso_fit3, test_data)
+# Make find performance metrics with the tuned model
+metrics <- metric_set(accuracy, f_meas) # create a set of metrics to test for classification
+# Model tuned to parameter penalty = 0.005
+penaltytune1 <- metrics(truth = P_UTDHPV, estimate = .pred_class, data = pen1_aug)
+print(penaltytune1)
+# Model tuned to parameter penalty = 0.01
+penaltytune2 <- metrics(truth = P_UTDHPV, estimate = .pred_class, data = pen2_aug)
+print(penaltytune2)
+```
+The performance metrics reveal a similar accuracy between both models, but a higher, thus better, F1 measure, from the LASSO model with the penalty of 0.005. This might indicate that, although the model tuned to the penalty 0.01 maximizes roc_auc, it may be at the cost of other performance metrics such as F1 (or precision and/or recall).
+We will examine this further with confusion matrices.
+```{r}
+# Compare confusion matrices
+# penalty 0.005
+conf_mat(
+  data = pen1_aug,
+  truth = P_UTDHPV,
+  estimate = .pred_class,
+  dnn = c("Prediction", "Truth"),
+  case_weights = NULL)
+# penalty 0.01
+conf_mat(
+  data = pen2_aug,
+  truth = P_UTDHPV,
+  estimate = .pred_class,
+  dnn = c("Prediction", "Truth"),
+  case_weights = NULL)
+```
+The confusion matrix for neither of these models is ideal, as they both have a fairly high number of false positives, leading to a poor sensitivity. Because the model with a lower penalty parameter seems to perform better when presented with new data, I will look at the coefficients chosen by this model and determine which variables it deems most important to predicting HPV vaccine completion.
+```{r}
+# Finding importance of variables chosen
+lasso_vars <- lasso_fit2 %>%
+  extract_fit_parsnip() %>% # use parsnip to extract to fit
+  vip::vip() #use vip for visualizing the most important variables
+
+print(lasso_vars)
+```
+It seems that the most important factors for HPV vaccine completion are the state, facility and housing status. The states that have the highest predictive power of HPV vaccine completion are Rhode Island, Vermont, Mississippi, and North Dakota.
+
+Note to Kelly: Perhaps we should try tuning the penalty to a different metric. May we can try tuning to F1 and see if that produces a different penalty value?
+Note to self/ Discussion idea: Maybe vaccine policy or vaccine requirements to start school differs by state, so this might affect completion rates.

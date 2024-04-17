@@ -74,35 +74,27 @@ Our study will fill in geographical gaps and provide updated vaccination trends 
 {{< pagebreak >}}
 
 # Methods
+## Loading Data
+The data was loaded from the original DAT file, entitled 'NISTEENPUF22.DAT' by specifying the column positions within the data file. The columns were then read and made into a data frame. Each of the factor variables was defined and the corresponding levels were assigned labels. The structure and summary statistics of all of the variables were examined. The loaded data is saved as a rds and a csv in the 'processed-data' folder, as to not alter the original raw data file. The definition of each factor variable in included in the README file within the 'raw-data' folder.
 
-## Data Cleaning and Processing
-
-### Loading the data
-
-The data was loaded from the original DAT file, entitled 'NISTEENPUF22.DAT' by specifying the column positions within the data file.
-The columns were then read and made into a data frame.
-Next, each of the factor variables were defined and the corresponding levels were assigned labels.
-The structure and summary statistics of all of the variables were examined.
-The loaded data is saved as a rds and a csv in the 'processed-data' folder.
-This does not alter the original raw data file.
-The definition of each factor variable in included in the README file within the 'raw-data' folder.
-
-Next, we explored the structure of the processed data and searched for any missing values.
-However, there were no NAs present.
-There are, however, missing values as labelled factor levels which must be accounted for.
-We identified the missing value labels by printing the factor levels.
-We then replaced the all of the values labelled missing with NA values.
-Next, we found a string of over 27000 NAs all of the variables for vaccination completion.
-These rows corresponded for all variables related to vaccine completion.
-Since this is the response variable of our scientific question, we eliminated these rows.
-We also eliminated rows with small numbers missing values, which were within the columns for facility, Wellchild exams, and insurance breaks.
-Lastly, we eliminatethe year column, as all of the data comes from the year 2022.
-We saved the cleaned data as an rds and csv in the 'processed-data' folder.
-
+## Cleaning Data
+The structure of the processed data was examined.  The data was examined for missing values. No NAs were present, however missing values were present as labeled factor levels. The missing factor levels were printed, identified, and replaced with NA values. A string of 27,000 NAs were present in the outcome variable, indicating vaccination completion. All rows corresponding to the NAs for the missing outcome value were removed. Approximately 160 additional rows with NA values for facility or insurance status variables were removed. Over 16,000 rows of data remained. The year column was eliminated, as all of the data is from 2022. We saved the cleaned data as an rds and csv in the 'processed-data' folder.
 ## Exploratory Analysis
+Exploratory analysis was used to determine the distribution of the predictors, including the socioeconomic variables that were chosen for analysis. The distribution of single predictors including income-to-poverty ratio, income, state, race, ethnicity, vaccination status, and facility were examined using histograms and scatter plots. The following predictors were compared visually and fitted to a linear regression to examine preexisting associations: vaccination status and ethnicity, vaccination status and poverty status, income poverty ratio and insurance status, income poverty ratio and ethnicity. 
+## Analysis
+### Generalized Logistic Regression
+A generalized logistic regression was performed with bi-directional step-wise selection for predictor reduction. Variables that were redundant of a major variable were excluded from analysis. The variables initially included were age, sex, state, race/ethnicity, insurance status, income, insurance breaks, poverty status, education, language, geographic mobility, facility, and housing status. The model was evaluated with a residual plot and correlation matrix to reveal strong multicollinearity. This is the basis for the subsequent analysis methods, as they are more resistant to collinearity.
+### Principal Component Analysis
+Principal component analysis (PCA) was performed to do dimensionality reduction. PCA would ideally transform the highly correlated predictors into uncorrelated components. The h2o package was used to provide a machine-learning platform in RStudio, to allow machine-learning methods ot be implemented. Due to the data being mainly categorical variables, the PCA proved to be unsuccessful. A LASSO Ridge Regression was performed with the h2o package, to mitigate the multicollinearity issue.
+### Random Forest Model
+A random forest model was used, as it is resistant to multicollinearity. The tidymodels package was used to produce a random forest model with the classification method. The model was trained and fit from training data, which was an 80% split of the original data. After evaluation, the model parameters for minimal node size and number of selected predictors were tuned for using a grid search with cross-validation resamples. After tuning, the best model was extracted based on the ROC AUC metric and was fit to the training data. The tuned model was used to make predictions and evaluated with performance metrics, a confusion matrix, and a comparison to a single-predictor random forest model. Finally, the tuned random forest model was re-evaluated by being fit to the testing data.
+### LASSO Regression
 
-We use our exploratory analysis to determine the distribution of our predictors, including the socioeconomic variables that we chose for analysis.
-The overall distribution of each factor variable is shown below.
+{{< pagebreak >}}
+
+# Results
+## Exploratory Data Analysis
+Exploratory analysis is used to determine the distribution of our predictors, including the socioeconomic variables that we chose for analysis. Nearly all of the demographic factors have a similar distribution between those who have completed their HPV vaccination regime versus those who have not completed it.
 
 ```{r}
 #| label: Table1
@@ -111,8 +103,6 @@ The overall distribution of each factor variable is shown below.
 Table1 <- readRDS(here("results/tables/table1.rds"))
 kable(Table1)
 ```
-```
-
 The distribution of the numerical income to poverty ratio can be shown below.
 It displays a value from 1-3.
 A ratio displaying less than 1 depicts an income less than the poverty level.Any income ratio \>1 indicates an income greater than the poverty level.
@@ -180,9 +170,7 @@ For mixed ethnic groups, vaccine completion corresponded with a higher mean inco
 
 ![Figure 12. Income-poverty level versus ethnic group](./images/raceeth-income-stratified.png)
 
-{{< pagebreak >}} 
-
-# Analysis
+## Analysis
 
 We begin with various socioeconomic predictors that interest us.
 Some of these predictors are a subset of the other, or may be used to describe an overall category.
@@ -211,7 +199,10 @@ RACEETHK is ideal because it includes both race and ethnicity.
 
 To determine which predictor variables will be best suited for a general linear model, I will do a step-wise comparison and then measure the resulting models with AIC and WAIC.
 
-# References
+
+# Discussion
+
+# Conclusion
 
 # References
 

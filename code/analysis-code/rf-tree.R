@@ -1,4 +1,6 @@
+
 ## ---- packages --------
+
 library(tidymodels) # use tidymodels framework.
 library(ggplot2) # producing visual displays of data
 library(dplyr) # manipulating and cleaning data
@@ -9,6 +11,7 @@ library(rsample) # for cross validation
 library(yardstick)
 
 ## ---- load-data --------
+
 # Load and preprocess data
 data_location <- here::here("data","processed-data","cleandata1.rds")
 mydata <- readRDS(data_location)
