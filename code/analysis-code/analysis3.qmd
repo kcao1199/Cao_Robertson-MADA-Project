@@ -57,6 +57,7 @@ lasso_rec <- recipe(P_UTDHPV ~ AGE + SEX + STATE + INS_STAT2_I + INCQ298A + INS_
 # Prepare the recipe
 lasso_prep <- lasso_rec %>%
   prep()
+
 ```
 Now I will implement the function. This involves setting the specific LASSO regression engine, creating a workflow, and then extracting the fit of the model.
 ```{r}
@@ -158,6 +159,8 @@ penalty_grid <- expand.grid(penalty = seq(0.001, 0.05, length.out = 20))
 # Set up parallel processing for faster tuning
 registerDoParallel()
 
+set.seed(123) # ste seed for reproducability
+
 # LASSO model specification
 lasso_model_tuned <- 
   logistic_reg(penalty = tune(), mixture = 1) %>%
@@ -194,34 +197,38 @@ roc_auc <- tuning_results %>%
 # View the ROC AUC values
 print(roc_auc)
 
+# find the best penalty for ROC AUC
+best_roc <- lasso_tuned %>%
+  select_best(metric = "roc_auc")
+best_roc
+
 ```
 
 When viewing the metrics of the tuning, we can see that the regularization is directly correlated with the reduction in roc_auc and accuracy and the increase in brier_Class. The accuracy is later shown to start increasing suggesting underfitting starts occurring around 0.01. Just reviewing the roc_auc alone, the best performance occurs when the penalty is at its lowest.
 
 # LASSO Re-fit
-Now, we will run the LASSO regression again, but with the tuned penalty parameter of 0.01. 
+Now, we will run the LASSO regression again, but with the tuned penalty parameter of 0.001. 
 ```{r}
-# Specify logistic regression model
-lasso_spec3 <- logistic_reg(penalty = 0.01, mixture = 1) %>%
+lasso_tune_spec <- logistic_reg(penalty = 0.001, mixture = 1) %>%
   set_engine("glmnet")
 
+# Create workflow
+lasso_tune_wf <- workflow() %>%
+  add_recipe(lasso_rec)%>%
+  add_model(lasso_tune_spec)
+
+
 # Fit the model using training data
-lasso_fit3 <- lasso_wf %>%
-  add_model(lasso_spec3) %>%
+lasso_tune_fit <- lasso_tune_wf %>%
   fit(data = train_data)
 
 # Extract and tidy model parameters
-lasso_fit3 %>%
-  extract_fit_parsnip() %>%
-  tidy()
-
-# Extract and tidy model parameters
-lasso_coef <- lasso_fit3 %>%
+lasso_tune_coef <- lasso_tune_fit %>%
   extract_fit_parsnip() %>%
   tidy()
 
 # Filter out predictors with non-zero coefficients
-lasso_nonzero_coef <- lasso_coef %>%
+lasso_nonzero_coef <- lasso_tune_coef %>%
   filter(estimate != 0)
 
 # View the remaining predictors with non-zero coefficients
@@ -229,7 +236,7 @@ num_observations <- nrow(lasso_nonzero_coef)
 print(num_observations)
 
 # Make predictions for ROC_AUC with the tuned model
-predictions3 <- lasso_fit3 %>%
+predictions3 <- lasso_tune_fit %>%
   augment(new_data = train_data)
 
 # Calculate ROC AUC
@@ -240,10 +247,10 @@ print(roc_auc)
 The ROC_AUC for this model with a penalty parameter of 0.01 is now 0.39. This is slightly worse than the model with a penalty of 0.05. However, the model with a lower penalty is more "unstable", so doing cross validation for the ROC_AUC may reveal which model is truly ideal. 
 
 # Comparing Predictions
-Now we will compare the two lasso models with the penalty parameters of 0.005 and 0.01 to determine which model performs best when presented with "new data". The new data is that split from the original data (the test data). 
+Now we will compare the two lasso models with the penalty parameters of 0.005 and 0.001 to determine which model performs best when presented with "new data". The new data is that split from the original data (the test data). 
 ```{r}
 pen1_aug <- augment(lasso_fit2, test_data)
-pen2_aug <- augment(lasso_fit3, test_data)
+pen2_aug <- augment(lasso_tune_fit, test_data)
 # Make find performance metrics with the tuned model
 metrics <- metric_set(accuracy, f_meas) # create a set of metrics to test for classification
 # Model tuned to parameter penalty = 0.005
@@ -253,8 +260,7 @@ print(penaltytune1)
 penaltytune2 <- metrics(truth = P_UTDHPV, estimate = .pred_class, data = pen2_aug)
 print(penaltytune2)
 ```
-The performance metrics reveal a similar accuracy between both models, but a higher, thus better, F1 measure, from the LASSO model with the penalty of 0.005. This might indicate that, although the model tuned to the penalty 0.01 maximizes roc_auc, it may be at the cost of other performance metrics such as F1 (or precision and/or recall).
-We will examine this further with confusion matrices.
+The performance metrics reveal a similar accuracy between both models, but a higher, thus better, F1 measure, from the LASSO model with the penalty of 0.001. 
 ```{r}
 # Compare confusion matrices
 # penalty 0.005
@@ -264,7 +270,7 @@ conf_mat(
   estimate = .pred_class,
   dnn = c("Prediction", "Truth"),
   case_weights = NULL)
-# penalty 0.01
+# penalty 0.001
 conf_mat(
   data = pen2_aug,
   truth = P_UTDHPV,
@@ -275,13 +281,25 @@ conf_mat(
 The confusion matrix for neither of these models is ideal, as they both have a fairly high number of false positives, leading to a poor sensitivity. Because the model with a lower penalty parameter seems to perform better when presented with new data, I will look at the coefficients chosen by this model and determine which variables it deems most important to predicting HPV vaccine completion.
 ```{r}
 # Finding importance of variables chosen
-lasso_vars <- lasso_fit2 %>%
+lasso_vars <- lasso_tune_fit %>%
   extract_fit_parsnip() %>% # use parsnip to extract to fit
   vip::vip() #use vip for visualizing the most important variables
 
 print(lasso_vars)
 ```
 It seems that the most important factors for HPV vaccine completion are the state, facility and housing status. The states that have the highest predictive power of HPV vaccine completion are Rhode Island, Vermont, Mississippi, and North Dakota.
+```{r}
+# Extract and tidy model parameters
+lasso_tune_coef <- lasso_tune_fit %>%
+  extract_fit_parsnip() %>%
+  tidy()
+
+# Filter out predictors with non-zero coefficients
+lasso_tune_coef <- lasso_tune_coef %>%
+  filter(estimate != 0)
+lasso_tune_coef
+```
+
 
 Note to Kelly: Perhaps we should try tuning the penalty to a different metric. May we can try tuning to F1 and see if that produces a different penalty value?
 Note to self/ Discussion idea: Maybe vaccine policy or vaccine requirements to start school differs by state, so this might affect completion rates.

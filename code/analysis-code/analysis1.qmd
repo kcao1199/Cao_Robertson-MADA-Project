@@ -88,10 +88,6 @@ variable_pairs <- cbind(variable_pairs, colnames(correlation_matrix)[indices[,2]
 
 # Print variable pairs with correlation values of 1 or 0
 print(variable_pairs)
-
-
 ```
 This shows that many levels from each of the variables show multicollineaity. This might be addressed by using a different model for analysis.
-
-
 

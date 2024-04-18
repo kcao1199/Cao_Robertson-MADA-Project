@@ -86,7 +86,7 @@ tune_spec <-
 
 ## I used ChatGPT to help me define the tree grid for the parameters mtry and min_n
 tree_grid <- grid_regular(mtry(range = c(1, 13)), 
-                          min_n(range = c(1, 200)),
+                          min_n(range = c(1, 500)),
                           levels = 6)
 
 rf_tune_wf <- workflow() %>% # create workflow
@@ -249,4 +249,6 @@ rf_vars <- rf_tune_fit %>%
 print(rf_vars)
 ```
 The most important variable, according to this model, is state, followed by income poverty ratio, then facility, then facility. Despite the importance above, it should be noted that the multicollinearity may affect the importance of the variables selected. This means that a model that regularizes the parameters could be ideal for finding the most important predictors.
-For this, we will try using the LASSO model
+For this, we will try using the LASSO model.
+
+

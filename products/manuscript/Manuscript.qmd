@@ -121,11 +121,8 @@ Finally, the tuned random forest model was re-evaluated by being fit to the test
 {{< pagebreak >}}
 
 # Results
-
 ## Exploratory Data Analysis
-
-Exploratory analysis is used to determine the distribution of our predictors, including the socioeconomic variables that we chose for analysis.
-Nearly all of the demographic factors have a similar distribution between those who have completed their HPV vaccination regime versus those who have not completed it.
+Exploratory analysis is used to determine the distribution of our predictors, including the socioeconomic variables that we chose for analysis. Nearly all of the demographic factors have a similar distribution between those who have completed their HPV vaccination regime versus those who have not completed it.
 
 ```{r}
 #| label: Table1
@@ -134,76 +131,17 @@ Nearly all of the demographic factors have a similar distribution between those 
 Table1 <- readRDS(here("results/tables/table1.rds"))
 kable(Table1)
 ```
-
-The distribution of the numerical income to poverty ratio can be shown below.
-It displays a value from 1-3.
-A ratio displaying less than 1 depicts an income less than the poverty level.Any income ratio \>1 indicates an income greater than the poverty level.
-Most of the observations were gathered from households with income ratios of 3, as shown by the skewed plot below.
-
+Income-poverty-ratio is a numeric value that indicates how close to poverty a family is living. It is calculated by income over the poverty income threshold and ranges from values 1 (closest to poverty) and 3 (furthest from poverty). The distribution of the income poverty ratio indicates a strong left skew. The highest frequency of observations was gathered from households with an income poverty ratio, meaning most survey participants live well above the poverty threshold. The family income is right skewed with the majority of the observations coming from \$75000+ income level. This indicates that a high frequency of participants are above the poverty income threshold, but also in a modest income class.
 ![Figure 1. Income-poverty ratio distribution](./images/income.png)
-
-Next, the distribution of surveys given per state was analyzed.
-The state variable shows a more uniformed distribution, suggesting that the observations were gathered fairly across the US states and territory.
-Although it is noted a few territories provides 0 observations.
-![Figure 2. State distribution](./images/state.distribution.png)
-
-The family income variable provides a more normal distribution with the majority of the observation coming from \$75000+ income level.
-![Figure 3. The family income distribution](./images/family.income.distribution.png)
-
-The race and ethnicity variables show a distribution that is similar to the U.S. census data, which concludes that the racial composition of the U.S. is 58.9% white, 13.6% African American, and 19.1% Hispanic or Latino.
-
-![Figure 4.Racial distribution](./images/race.distribution.png)
-
-![Figure 5.Ethnicity distribution](./images/ethnicity.distribution.png)
-
-The Insurance status variable shows that the majority of the observations came from households with private insurance only.
-This is followed by any medicaid and then other insurance.
-This is mirrored in the facility variable, where a majority of its observations show private facilities being the location.
-![Figure 6. Insurance status distribution](./images/insurance.status.distribution.png) ![Figure 7. Distribution of the medical facility where the survey was administerred](./images/facility.distribution.png)
-
-The vaccination variable indicates nearly 80% of the observations had an Up-to-date status for the 1+ shot HPV vaccination.
-We will follow by examining the percentage of up-to-date vaccination status by state.
-
-![Table 2. Vaccine status distribution](./images/state-vaccine-completion.png)
-
-We examine the facility that submitted the survey, which is stratified by the vaccine completion status of the survey subject.
-
-![Figure 8.Facility and vaccine completion distribution](./images/facility-vaccination.png)
-
-We examine the percentage of vaccination completion by race and ethnicity.
-Because there are different counts of each race/ethnicity for each factor level, the percentage of those with up-to-date vaccine status out of each race/ethnicity level was determined.
-This adjusts for the different counts in each racial category.
-The Hispanic ethnicity was found to have the highest vaccine completion while non-hispanic white has the lowest.
-
-![Figure 9. Distribution of vaccine completion stratified by race and ethnicity](./images/raceeth-income-stratified.png)
-
-## Model and Plot Fitting
-
-A boxplot is created with income-poverty ratio to vaccination status.
-The box plot indicates little difference between the two status.
-A statistical model is fitted to the same variables.
-A p-value of 0.1358 suggests there is little significance between the income-poverty variable and the vaccination status.
-
-![Figure 10.](./images/income-vaccination.png)
-
-A boxplot is created with income-poverty ratio to insurance status.
-The box plot indicates there are distinct difference between the two status.
-A statistical model is fitted to the same variables.
-The p-value of \< 2.26e-16 suggests there is statistical significance between the income-poverty variable and the insurance status.
-
+![Figure 2. The family income distribution](./images/family.income.distribution.png)
+The state variable shows a more uniform distribution, suggesting that the observations were gathered fairly across the US states and territories. States and territories with a significantly larger number of observations include Texas, West Virginia, Pennsyvania, Puerto Rico, New York, and Illinois. Although it is noted a few territories provide 0 observations. The race and ethnicity variables show a distribution that is similar to the U.S. census data. The census data states that the racial composition of the U.S. is 58.9% white, 13.6% African American, and 19.1% Hispanic or Latino, while our survey population is composed of 58.% white, 9.15% African American, and 19.9% Hispanic or Latino participants.
+The majority of observations came from households with private insurance only The Insurance status variable shows that the majority of the observations came from households with private insurance only (58.6%), followed by Medicaid (31.6%), other insurance (7.7%), and uninsured (2.2%). This is mirrored in the facility variable, as survey location, where a majority of its observations show private facilities (34.4%), followed by mixed facilities (25.8%), hospitals (11.3%), and all public facilities (9.9%). 15.2% of the facility types were unknown. Upon stratification of facility type by HPV vaccination completion status,  it was found that the majority of participants who were up-to-date were surveyed at private or mixed facilities. They likely received their HPV vaccination there as well.
+![Figure 3.Facility and vaccine completion distribution](./images/facility-vaccination.png)
+A total of 79% of participants had up-to-date status for receiving 1 or more shots of HPV vaccination. U.S. states and territories had an HPV vaccination completion rate ranging from 69% to 95%, fluctuating around ~80%. There are different counts of each race/ethnicity for each factor level, so the percentage of those with up-to-date vaccine status out of each race/ethnicity level was adjusted. The Hispanic ethnicity was found to have the highest vaccine completion while the non-Hispanic white ethnicity had the lowest. It was also found that for Hispanic and Non-Hispanic black ethnicities, the income poverty ratio was higher for those who were not up-to-date in HPV vaccination status, compared to those who were. The opposite was true for mixed ethnic groups, where vaccine completion corresponded with a higher mean income-poverty ratio. When examining the overall HPV vaccination status stratified by income poverty ratio, the income poverty ratio did not differ between those who are up to date and those who are not. This may be accounted for by other trends such as that shown with ethnicity, above.
+![Figure 9. Distribution of income poverty ratio stratified by race and HPV vaccination completion status](./images/raceeth-income-stratified.png)
+	Subsequently, income poverty ratio and insurance status were examined, and stratified by HPV vaccination status. It is apparent that those with private and other insurance status had the highest income-poverty ratio, while those with Medicaid or uninsured were closer to the poverty income threshold. For those with Medicaid, those who were up-to-date in HPV vaccinations had a slightly lower income-poverty ratio than those who were not up to date.
 ![Figure 11. Income poverty ratio and insurance status](./images/insurance-income-stratified.png)
-
-Income-poverty ratio was fit to vaccine status and insurance status in a multi-linear model.
-
-A box-plot was created for income-poverty level versus race/ethnicity and this was stratified by vaccine completion (UTD or NOT UTD).
-A lower income-poverty ratio means the group is closer to the poverty line.
-For the non-Hispanic black and Hispanic racial and ethnic groups, vaccine completion corresponded with a lower mean income-poverty ratio.
-For mixed ethnic groups, vaccine completion corresponded with a higher mean income-poverty ratio.
-
-![Figure 12. Income-poverty level versus ethnic group](./images/raceeth-income-stratified.png)
-
 ## Analysis
-
 We begin with various socioeconomic predictors that interest us.
 Some of these predictors are a subset of the other, or may be used to describe an overall category.
 
