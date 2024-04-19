@@ -245,10 +245,7 @@ Although the model is overfit, I will attempt to visualize the predictors chosen
 rf_vars <- rf_tune_fit %>%
   extract_fit_parsnip() %>% # use parsnip to extract to fit
   vip::vip() #use vip for visualizing the most important variables
-
-print(rf_vars)
+rf_vars
 ```
 The most important variable, according to this model, is state, followed by income poverty ratio, then facility, then facility. Despite the importance above, it should be noted that the multicollinearity may affect the importance of the variables selected. This means that a model that regularizes the parameters could be ideal for finding the most important predictors.
 For this, we will try using the LASSO model.
-
-

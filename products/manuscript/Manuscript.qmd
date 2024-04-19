@@ -131,55 +131,41 @@ Exploratory analysis is used to determine the distribution of our predictors, in
 Table1 <- readRDS(here("results/tables/table1.rds"))
 kable(Table1)
 ```
+
 Income-poverty-ratio is a numeric value that indicates how close to poverty a family is living. It is calculated by income over the poverty income threshold and ranges from values 1 (closest to poverty) and 3 (furthest from poverty). The distribution of the income poverty ratio indicates a strong left skew. The highest frequency of observations was gathered from households with an income poverty ratio, meaning most survey participants live well above the poverty threshold. The family income is right skewed with the majority of the observations coming from \$75000+ income level. This indicates that a high frequency of participants are above the poverty income threshold, but also in a modest income class.
 ![Figure 1. Income-poverty ratio distribution](./images/income.png)
+
 ![Figure 2. The family income distribution](./images/family.income.distribution.png)
+
 The state variable shows a more uniform distribution, suggesting that the observations were gathered fairly across the US states and territories. States and territories with a significantly larger number of observations include Texas, West Virginia, Pennsyvania, Puerto Rico, New York, and Illinois. Although it is noted a few territories provide 0 observations. The race and ethnicity variables show a distribution that is similar to the U.S. census data. The census data states that the racial composition of the U.S. is 58.9% white, 13.6% African American, and 19.1% Hispanic or Latino, while our survey population is composed of 58.% white, 9.15% African American, and 19.9% Hispanic or Latino participants.
 The majority of observations came from households with private insurance only The Insurance status variable shows that the majority of the observations came from households with private insurance only (58.6%), followed by Medicaid (31.6%), other insurance (7.7%), and uninsured (2.2%). This is mirrored in the facility variable, as survey location, where a majority of its observations show private facilities (34.4%), followed by mixed facilities (25.8%), hospitals (11.3%), and all public facilities (9.9%). 15.2% of the facility types were unknown. Upon stratification of facility type by HPV vaccination completion status,  it was found that the majority of participants who were up-to-date were surveyed at private or mixed facilities. They likely received their HPV vaccination there as well.
 ![Figure 3.Facility and vaccine completion distribution](./images/facility-vaccination.png)
+
 A total of 79% of participants had up-to-date status for receiving 1 or more shots of HPV vaccination. U.S. states and territories had an HPV vaccination completion rate ranging from 69% to 95%, fluctuating around ~80%. There are different counts of each race/ethnicity for each factor level, so the percentage of those with up-to-date vaccine status out of each race/ethnicity level was adjusted. The Hispanic ethnicity was found to have the highest vaccine completion while the non-Hispanic white ethnicity had the lowest. It was also found that for Hispanic and Non-Hispanic black ethnicities, the income poverty ratio was higher for those who were not up-to-date in HPV vaccination status, compared to those who were. The opposite was true for mixed ethnic groups, where vaccine completion corresponded with a higher mean income-poverty ratio. When examining the overall HPV vaccination status stratified by income poverty ratio, the income poverty ratio did not differ between those who are up to date and those who are not. This may be accounted for by other trends such as that shown with ethnicity, above.
 ![Figure 9. Distribution of income poverty ratio stratified by race and HPV vaccination completion status](./images/raceeth-income-stratified.png)
+
 	Subsequently, income poverty ratio and insurance status were examined, and stratified by HPV vaccination status. It is apparent that those with private and other insurance status had the highest income-poverty ratio, while those with Medicaid or uninsured were closer to the poverty income threshold. For those with Medicaid, those who were up-to-date in HPV vaccinations had a slightly lower income-poverty ratio than those who were not up to date.
 ![Figure 11. Income poverty ratio and insurance status](./images/insurance-income-stratified.png)
+
+
 ## Analysis
-We begin with various socioeconomic predictors that interest us.
-Some of these predictors are a subset of the other, or may be used to describe an overall category.
-
-The variables used were chosen based on their interpretability and applicability to our research question “Which socioeconomic and geographic factors impact HPV vaccine completion rates among teenagers?”
-.
-There are seven potential outcome variables for HPV vaccine completion:
-
+The variables selected for analysis were chosen based on their interpretability and applicability to our research question “Which socioeconomic and geographic factors impact HPV vaccine completion rates among teenagers?” Any variables that capture repetitive data were removed and the most important or straightforward version of the variable was kept in the model. Seven variables represented data for the outcome of HPV vaccination completion:
 ![Table 3. Human Papillomavirus vaccine status variables and meanings.](./images/UTDHPV-variable-table.png)
 
-The first option, P_UTDHPV was the chosen outcome as it is the most general.
-It has the benefit of being able to use Age as a predictor variable and also not biasing the model towards older ages who are required to receive more than one shot to be considered up-to-date.
-Additionally, in April of 2022, the SAGE work group of the WHO officially recommended a single-dose HPV vaccine regime, because vaccine efficacy was found to be significantly high with a single dose.
-This recommendation was given with the goal of increasing vaccine coverage in areas with lower vaccine accessibility and availability (13).
-In September of 2023, PAHO followed suit in recommending a single-dose HPV vaccine regime for the Americas (14).
-
-The predictor variables we chose to examine are listed below:
-
+The first option, P_UTDHPV was the chosen outcome as it is the most general. It has the benefit of being able to use Age as a predictor variable and also not biasing the model towards older ages who are required to receive more than one shot to be considered up-to-date. Additionally, in April of 2022, the SAGE work group of the WHO officially recommended a single-dose HPV vaccine regime, because vaccine efficacy was found to be nearly as high with a single dose as it is with the multi-dose regime. This recommendation was given with the goal of increasing vaccine coverage in areas with lower vaccine accessibility and availability (13). In September of 2023, PAHO followed suit in recommending a single-dose HPV vaccine regime for the Americas (14). This supports our rationale for choosing the single or more dose, up-to-date, outcome variable. The variables that remained in the initial logistic regression are listed below.
 ![Table 4. Potential predictor variable names and meanings.](./images/Predictor-variable-table.png)
 
-INCOPAR or income-poverty ratio was excluded because this is reflected by the income and poverty status variables, separately.
-Additionally, this is a numeric variable while the others are categorical.
-RACE_K or race was excluded because race is included within the RACEETHK variable.
-RACEETHK is ideal because it includes both race and ethnicity.
-
-To determine which predictor variables will be best suited for a general linear model, we employed a stepwise comparison is performed and then assessed with AIC and WAIC. The stepwise model is set up with `P_UTDPHPV` as the outcome and the remaining chosen variables as the predictors. Each predictors were added and dropped in different variations, and the resulting AIC were recorded for each of the different models. From this, we were able to determine that the model with the lowest AIC (and thus the greatest fit) was the model with all of the predictors that we previously picked out. 
-
-Moving from that, we plotted the residuals from the logistic regression model to check for non-linearity and discovered that the predictors potentially had a high indication of collinearity. to further confirm this, a VIF analysis was attempted but was unable to proceed as the multicollinearity was too great for too many variables. As a result, we decided to perform a correlation matrix, which performed as expected and verified our concerns.
-
+INCOPAR or income-poverty ratio was excluded because this is reflected by the income and poverty status variables, separately. Additionally, this is a numeric variable while the others are categorical. RACE_K or race was excluded because race is included within the RACEETHK variable. RACEETHK is ideal because it includes both race and ethnicity.
+### Stepwise Selection with Logistic Regression
+To determine which predictor variables will be best suited for a general logistic model, we employed a bi-directional stepwise selection method. The results were assessed with AIC and WAIC. The stepwise model is set up with `P_UTDPHPV` as the outcome and the remaining chosen variables as the predictors. Each predictors were added and dropped in different variations, and the resulting AIC were recorded for each of the different models. From this, we were able to determine that the model with the lowest AIC (and thus the greatest fit) was the model that included all of the original factors. 
+The logistic regression with the selected variables was assessed by plotting the residuals. This revealed that the predictors had a high indication of collinearity. To confirm this, a VIF analysis was attempted but was unable to proceed as the multicollinearity was too great for too many variables. As a result, we decided to perform a correlation matrix, which performed as expected and verified our concerns. Multi-collinearity was present between the majority of the predictor variables, thus another model type that could handle collinearity would be ideal.
 INCLUDE EITHER REGRESSION PLOT OR STEPWISE FINAL RESULT IMAGE
-
+### Principal Component Analysis and LASSO Regression
 In order to reduce the multicollinearity issue, we initially attempted to use PCA. To employ the unsupervised learning model, we use the `h2o` package. The PCA resulted in one principle component with a high standard deviation and high proportion of variance, showing that the Pc1 captures a large portion (97.9%) of variability in the data. 
-
 INCLUDE IMAGE OF PCA RESULTS
-
 The result of having only one principle component further supports the fact that many of the predictor variables are highly collinear. One PC shows that a PCA must reduce the data object to a single dimension. Having a single principal component could be problematic for my analysis, particularly if it leads to the loss of crucial information or structure in my data due to collinearity among the original features. 
 
 Using the same package, I used the LASSO logistical regression model and performed a co-validation test on it. 
-
 ```
 MSE:  0.1558815
 RMSE:  0.3948183
@@ -192,10 +178,12 @@ R^2:  0.05771195
 Residual Deviance:  16070.08
 AIC:  16266.08
 ```
+### Random Forest Model
+	We used a Random Forest Model to assess which predictors are associated with HPV vaccination completion rates in U.S. teens. Decision tree models are known to be able to handle collinearity and predictors with different trends. A random forest model is ideal because it employs bootstrapping to produce randomly chosen iterations of decision trees to introduce variability. The best random forest model can then be tuned for and selected based on which tree performs best in a certain metric. The random forest model was produced using the tidy model framework and tuned using a cross-validated grid search for the minimum node size (min_n) and the number of variables to randomly sample at each split (mtry). The model with the best ROC AUC metric was selected, and predictions were produced. The model indicated that the most important predictors of HPV vaccination completion, in order of most to least important, are state, income level, facility, age, race/ ethnicity, insurance status, education, housing status, sex, and geographic mobility.
+[insert plot  of most important predictors from vip package; not sure how, because it is an environment and I don’t know how to extract one plot]
+However, after testing the same metrics with new data (testing data), the F1 metric was reduced from 0.86 to 0.16, which could indicate overfitting or that the model is “too big” for the data.
 
-Random Forest
-
-LASSO Regression
+#### LASSO Regression with Tidymodels
 # Discussion
 
 # Conclusion
