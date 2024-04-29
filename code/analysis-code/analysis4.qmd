@@ -7,9 +7,204 @@ editor:
   markdown: 
     wrap: sentence
 ---
-# Finding Best Model
-Comparing the previous three models used in analysis1.qmd, analysis2.5.qmd, and analysis4.qmd. These models include : general logistic regression model, Random Forest regression model, and LASSO regression model. 
+# Elastic Net Regression
+Because the random forest model was overfit and the lasso model did not capture all of the trends, we will create an elastic net model of our categorical variables.
 
-# Summary of the predictions and Metrics
+## Loading data
+We will begin by loading the data and opening the libraries needed for the analysis
+```{r}
+# Open the libraries needed
+library(tidymodels) # use tidymodels framework
+library(ggplot2) # producing visual displays of data
+library(dplyr) # manipulating and cleaning data
+library(here) # making relative pathways
+library(glmnet) # for LASSO regression engine
+library(doParallel) # for parallel processing
+library(rsample) # for cross validation
+library(yardstick) # for metrics
+library(mlbench)
+library(vip)
 
-# Test Data 
+# Load and preprocess data
+data_location <- here::here("data","processed-data","cleandata1.rds")
+mydata <- readRDS(data_location)
+
+# Remove rows with missing values
+mydata$SEX <- droplevels(mydata$SEX, exclude = c("DON'T KNOW", "MISSING IN ERROR", "REFUSED"))
+mydata$INS_STAT2_I <- droplevels(mydata$INS_STAT2_I, exclude = "MISSING Data")
+mydata$STATE <- droplevels(mydata$STATE, exclude = "Missing Data")
+mydata$MOBIL_1 <- droplevels(mydata$MOBIL_1, exclude = c("DON'T KNOW", "MISSING IN ERROR", "REFUSED"))
+mydata$FACILTY <- droplevels(mydata$FACILITY, exclude = "Missing Data")
+mydata$P_UTDHPV <- droplevels(mydata$P_UTDHPV, exclude = "Missing Data")
+```
+Next, we will split the data into training and testing groups so that the LASSO regression has a comparison group.
+```{r}
+# Split data into training and testing datasets
+set.seed(123) # seed for reproducibility
+split_data <- initial_split(mydata, prop = 0.8) # 80% split for training/testing data
+train_data <- training(split_data)
+test_data <- testing(split_data)
+```
+## Elastic net first fit
+Now we will proceed by fitting the elastic ent model for the first time
+```{r}
+# Split the data into training and testing sets
+set.seed(123)  # for reproducibility
+
+# Create amodel with the specifications for elatic net
+elastic_net <- logistic_reg(mode = "classification") %>%
+  set_engine("glmnet") %>%
+  set_mode("classification") %>%
+  set_args(
+    penalty = 0.005,  # use the penalty for the previous lasso regression
+    mixture = 0.5   
+  )
+
+# create a recipe, using your formula, for elastic net
+elastic_rec <- recipe(P_UTDHPV ~ AGE + SEX + STATE + INS_STAT2_I + INCQ298A + INS_BREAK_I + INCPOV1 + RACEETHK + EDUC1 + LANGUAGE + MOBIL_1 + RENT_OWN + FACILITY, data = train_data) %>%
+  step_dummy(all_nominal(), -all_outcomes())  %>% # convert categorical variables (nominal) into dummy variables
+  step_rm(all_outcomes(), -all_outcomes()) #remove the outcome variables from the dataset
+
+# Prepare the elastic net recipe
+elastic_prep <- elastic_rec %>%
+  prep()
+
+# produce elastic net workflow
+workflow <- workflow() %>%
+  add_recipe(elastic_rec) %>%
+  add_model(elastic_net)
+
+# implement elastic net workflow
+en_fit <- workflow %>% 
+  fit(data = train_data) # fit to training data
+
+en_predictions <- augment(en_fit, train_data) #make predictions on training data
+print(en_predictions)
+```
+Now that we have produced predictions with the elastic net model, we will look at the performance metrics of this model and then tune the model parameters.
+```{r}
+# Calculate ROC AUC
+roc_auc <- en_predictions %>%
+  roc_auc(truth = P_UTDHPV, .pred_UTD)
+print(roc_auc)
+```
+The ROC AUC reveals that there is no predictive power with the elastic net model, so I will tune this model to reveal if it produces better predictions.
+```{r}
+# Tune for penalty and mixture parameters
+
+# produce the model spec using the same recipe, except with the aprameters for tuning using tune()
+elastic_spec <- logistic_reg(mode = "classification") %>%
+  set_engine("glmnet") %>%
+  set_mode("classification") %>%
+  set_args(
+    penalty = tune(), #set both penalty and mixture parameters to tune  
+    mixture = tune()
+  )
+# make the tuning grid with the range for penalty and for mixture values
+tune_grid <- expand.grid(
+  penalty = seq(0.001, 0.05, length.out = 20),
+  mixture = c(0.25, 0.5, 0.75)
+)
+
+folds <- vfold_cv(train_data, v = 5, repeats = 5) # define number of folds and repeats for cross validation
+
+# Set up parallel processing for faster tuning
+registerDoParallel()
+
+set.seed(123) # set seed for predictability
+
+# produce elastic net workflow using the tuning spec
+workflow <- workflow() %>%
+  add_recipe(elastic_rec) %>%
+  add_model(elastic_spec) #use the tuned spec for the model
+
+en_tuned <- 
+  workflow %>%
+  tune_grid(
+    resamples = folds, 
+    grid = tune_grid,
+    control = control_grid(verbose = TRUE)
+  )
+
+# View tuning results
+tuned_plot <- autoplot(en_tuned)
+tuned_plot + ggtitle( "Tuned elastic Net Model")
+
+# Collect tuning results
+tuning_results <- en_tuned %>%
+  collect_metrics()
+
+# Filter for ROC AUC metric
+roc_auc <- tuning_results %>%
+  filter(.metric == "roc_auc")
+
+# View the ROC AUC values
+print(roc_auc)
+```
+For the results of the three graphs, we can see that the ideal mixture is likely 0.25. The amount of regularization, is best around 0.01, for a mixture of 0.25. Because of this, I will select the best model with a mixture of 0.25 and penalty of ~ 0.01.
+
+```{r}
+# select the model based on the best roc auc score
+best_auc <- select_best(en_tuned, metric = "roc_auc")
+
+final_en <- finalize_model( # finalize the model based on the roc auc score
+  elastic_spec,
+  best_auc
+)
+# Split the data into training and testing sets
+set.seed(123)  # for reproducibility
+
+# produce elastic net workflow
+workflow <- workflow() %>%
+  add_recipe(elastic_rec) %>%
+  add_model(final_en)
+
+# implement elastic net workflow
+en_tune_fit <- workflow %>% 
+  fit(data = train_data) # fit to training data
+
+en_predictions_tune <- augment(en_tune_fit, train_data) #make predictions on training data
+print(en_predictions)
+
+# Calculate ROC AUC
+roc_auc <- en_predictions_tune %>%
+  roc_auc(truth = P_UTDHPV, .pred_UTD)
+print(roc_auc)
+```
+The ROC AUC has slightly improved, to 0.335 rather then 0.338. I will now evaluate other performance metrics of the model, including rmse and accuracy to see if the model has improved.
+```{r}
+tuned_metrics <- metrics(truth = P_UTDHPV, estimate = .pred_class, data = en_predictions) # calculate metrics for first fit
+print(tuned_metrics)
+```
+The accuracy of the model is fairly high, at 0.79 or 79%, but we will see how these performance metrics change after using the test data to make predictions.
+```{r}
+# use test data ot make predictions
+en_predictions_test <- augment(en_tune_fit, test_data) #make predictions on testing data
+print(en_predictions_test)
+
+# evaluate roc_auc
+roc_auc <- en_predictions_test %>%
+  roc_auc(truth = P_UTDHPV, .pred_UTD)
+print(roc_auc)
+
+#evaluate accuracy and kap
+tuned_metrics <- metrics(truth = P_UTDHPV, estimate = .pred_class, data = en_predictions_test) # calculate metrics for first fit
+print(tuned_metrics)
+
+# evaluate the F1 score of the model predictions
+f1 <- en_predictions_test %>%
+  f_meas(truth = P_UTDHPV, estimate = .pred_class)
+print(f1)
+```
+The ROC_AUC stayed fairly similar, at 0.365 and the accuracy remained the same, around 0.79 and a kap value of around 0.036. The kappa value is best around 1 or -1, so a kap of 0.036 is not good.
+
+Despite this, I will see if the important predictors are in agreement with our LASSO model using the vip package.
+```{r}
+# Finding importance of variables chosen
+en_vars <- en_tune_fit %>%
+  extract_fit_parsnip() %>% # use parsnip to extract to fit
+  vip::vip() #use vip for visualizing the most important variables
+
+print(en_vars)
+```
+The elastic net model produced the same important variables as the previous lasso model. 
