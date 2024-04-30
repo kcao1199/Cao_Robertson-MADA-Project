@@ -1,0 +1,177 @@
+---
+title: Project Review Template 
+author: Arlyn Santiago
+date: date-modified
+format: 
+  html:
+    toc: true
+    toc-depth: 3
+    number-sections: true
+---
+
+# Overview
+
+Title of project: HPV vaccination completion rates depending on several socioeconomic factors
+
+Name of project author(s):Rachel Robertson and Kelly Cao
+
+Name of project reviewer:Arlyn Santiago
+
+
+# Specific project content evaluation
+Evaluate the different parts of the project by filling in the sections below.
+
+
+## Background, Context and Motivation
+How well is the context of the project described? Is a comprehensive background, including summary of previous/related work given? Is the project well placed into the context of existing work (including proper referencing of existing work). Is it clear why the project was undertaken and what new information it hopes to provide?
+
+### Feedback and Comments
+
+I believe both authors do a job of explaining the purpose of this project and providing a solid background on HPV.
+
+### Summary assessment (PICK ONE, DELETE THE OTHERS)
+
+* strong contextualization and motivation
+
+
+## Question description
+How well and clear are the question(s)/hypotheses the project aims to address described? Is it clear how the questions relate to the data?
+
+
+### Feedback and Comments
+I think the question is clear that their aim is to identify the socioeconomic and geographic factors associated with HPV vaccination completion for teenagers aged 13 to 17 in the U.S.
+
+### Summary assessment
+
+* question/hypotheses fully explained
+
+
+
+## Data description
+How well is the data overall described? Is the source provided? Is a codebook or other meta-information available that makes it clear what the data is? 
+
+### Feedback and Comments
+
+I think the data is well explained, however, I think it would be best to include all variable names and meanings into a codebook excel sheet, and place this excel sheet into the data folder. Or, is this the README file located in raw-data folder?
+
+### Summary assessment
+
+* source and overall structure of data well explained
+
+
+## Data wrangling and exploratory analysis
+How well is the data cleaned/processed and explored? Are all steps reasonable and well explained? Are alternatives discussed and considered? Are meaningful exploratory results shown (e.g. in the supplementary materials)?
+
+### Feedback and Comments
+
+Maybe I wasn't looking in the right file, but in your EDA-code qmd there wasn't much explanation on how the data was cleaned. Most of your cleaning was done in the cleaning1.R file so it would be best to direct your reader to this file. The following is mentioned, "The following data set has been cleaned.Any observations with NAs has been removed." Maybe it would be best to add comments to your code such as using drop_na() to remove NAs. I believe your plots are helpful. 
+
+### Summary assessment
+
+* some weaknesses in wrangling and exploratory component
+
+
+## Appropriateness of Analysis
+Were the analysis methods appropriate for the data? Was the analysis done properly? Were different components of the analysis (e.g. performance measure, variable selection, data pre-processing, model evaluation) done in the best way possible and explained well?
+
+### Feedback and Comments
+
+The analysis was done properly done. However, it was a bit difficult to understand since the analysis was done over seperate files. It would be best to include all the analysis on one file. It's possible I missed it but you could also add Cross Validation to your LASSO to help the optimal lambda value and ensure the model generalizes well.
+
+### Summary assessment
+ 
+* strong and reasonable analysis
+
+## Presentation
+How well are results presented? Are tables and figures easy to read and understand? Are the main figures/tables publication level quality? 
+
+### Feedback and Comments
+
+The results are very well presented, however, I would rename some of the variables such as INCPOV1 your plots to the variable meaning (poverty status). For Figure it would be best to rotate your x-axis labels. This website does a good job explaining how (https://stackoverflow.com/questions/1330989/rotating-and-spacing-axis-labels-in-ggplot2)
+
+### Summary assessment
+
+* results are very well presented
+
+
+## Discussion/Conclusions
+Are the study findings properly discussed? Are strengths and limitations acknowledged? Are findings interpreted properly?
+
+### Feedback and Comments
+
+I was not able to find any discussion/conclusion. I would try to interpret the findings of your random forest model as they gave you guys the best findings compared to the other models. 
+
+### Summary assessment
+* major parts of discussion missing or wrong 
+
+
+
+## Further comments
+
+_Add any other comments regarding the different aspects of the project here. Write anything you think can help your classmate improve their project._
+
+
+
+# Overall project content evaluation
+Evaluate overall features of the project  by filling in the sections below.
+
+
+## Structure
+Is the project well structured? Are files in well labeled folders? Do files have reasonable names? Are all "junk" files not needed for analysis/reproduction removed? By just looking at files and folders, can you get an idea of how things fit together?
+
+### Feedback and Comments
+
+I think the project is labeled in a very self-explanatory way, however, it would be best to place your data cleaning in the EDA file or mention the data cleaning within the EDA file. Also, the analysis should be placed within one file for ease of access. 
+
+### Summary assessment
+
+* mostly clear, but some confusing parts (e.g. useless files, things in the wrong folders)
+
+
+
+## Documentation 
+How well is the project documented? Are you able to understand each step of the whole analysis, each decision that was made, and each line of code? Is enough information provided as comments in code or as part of Rmd files? 
+
+### Feedback and Comments
+I think enough information was provided to understand each step of the analysis. 
+
+### Summary assessment
+
+* fully and well documented
+
+
+
+## Reproducibility
+Are all results fully reproducible? Is documentation provided which clearly explains how to reproduce things, and does it work without the need for any manual intervention? Are you able to re-run the whole analysis without having to do manual interventions/edits?
+
+### Feedback and Comments
+
+I was able to fully run everything.
+
+
+### Summary assessment
+
+* fully reproducible without issues
+
+
+## Thoroughness
+How thorough was the overall study? Were alternatives (e.g. different ways of processing the data or different models) considered? Were alternatives discussed? Were the questions/hypotheses fully and thoroughly addressed?
+
+### Feedback and Comments
+
+If both of guys are able to fully address the hypothesis and explain your findings, then you should have an through overall study. 
+
+### Summary assessment
+
+* decent level of thoroughness
+
+
+
+## Further comments
+
+You guys have done a great job! I would try and add more information on vaccine bias, especially within marginalized groups and how the findings of this study might combat that in your Discussion. 
+
+
+
+
+
