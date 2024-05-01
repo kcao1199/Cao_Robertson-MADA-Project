@@ -1,0 +1,170 @@
+---
+title: Project Review Part 5 
+author: Mutsa Nyamuranga
+date: 04-25-2024
+format: 
+  html:
+    toc: true
+    toc-depth: 3
+    number-sections: true
+---
+
+# Overview
+
+Title of project: Teenage HPV Vaccination Coverage and Socioeconomic Factors
+
+Name of project author(s): Kelly Cao, Rachel Robertson
+
+Name of project reviewer: Mutsa Nyamuranga
+
+
+# Instructions
+
+# Specific project content evaluation
+Evaluate the different parts of the project by filling in the sections below.
+
+
+## Background, Context and Motivation
+How well is the context of the project described? Is a comprehensive background, including summary of previous/related work given? Is the project well placed into the context of existing work (including proper referencing of existing work). Is it clear why the project was undertaken and what new information it hopes to provide?
+
+### Feedback and Comments
+
+The background was very thorough with multiple citations and necessary cotectual evidence. 
+
+### Summary assessment (PICK ONE, DELETE THE OTHERS)
+
+* strong contextualization and motivation
+
+
+
+## Question description
+How well and clear are the question(s)/hypotheses the project aims to address described? Is it clear how the questions relate to the data?
+
+
+### Feedback and Comments
+
+The research question was clearly stated and explained. 
+
+### Summary assessment
+
+* question/hypotheses fully clear
+
+
+
+## Data description
+How well is the data overall described? Is the source provided? Is a codebook or other meta-information available that makes it clear what the data is? 
+
+### Feedback and Comments
+
+Data source was clearly described. There was a codebook provided.   
+
+### Summary assessment
+
+* source and overall structure of data well explained
+
+
+## Data wrangling and exploratory analysis
+How well is the data cleaned/processed and explored? Are all steps reasonable and well explained? Are alternatives discussed and considered? Are meaningful exploratory results shown (e.g. in the supplementary materials)?
+
+### Feedback and Comments
+
+Data was well processed. Detailed comments/notes were provided for all procedures.
+There was no supplementary material. 
+
+### Summary assessment
+
+* essentially no weaknesses in wrangling and exploratory component
+
+## Appropriateness of Analysis
+Were the analysis methods appropriate for the data? Was the analysis done properly? Were different components of the analysis (e.g. performance measure, variable selection, data pre-processing, model evaluation) done in the best way possible and explained well?
+
+### Feedback and Comments
+
+The analysis methods were appropriate for the question to be answered. Cross-validation was used for performance evaluation and there were multiple models produced and tested to gather the appropriate metrics.
+
+### Summary assessment
+
+* strong and reasonable analysis
+
+## Presentation
+How well are results presented? Are tables and figures easy to read and understand? Are the main figures/tables publication level quality? 
+
+### Feedback and Comments
+
+The results were presented in a well-structured manner. 
+
+### Summary assessment
+
+* results are very well presented
+
+
+## Discussion/Conclusions
+Are the study findings properly discussed? Are strengths and limitations acknowledged? Are findings interpreted properly?
+
+### Feedback and Comments
+
+There was no discussion or conclusion posted
+
+### Summary assessment
+
+* major parts of discussion missing or wrong
+
+
+## Further comments
+
+There were some edits that I made to allow code to flow, however, overall the project is well done and very comprehensive.  
+
+
+# Overall project content evaluation
+Evaluate overall features of the project  by filling in the sections below.
+
+
+## Structure
+Is the project well structured? Are files in well labeled folders? Do files have reasonable names? Are all "junk" files not needed for analysis/reproduction removed? By just looking at files and folders, can you get an idea of how things fit together?
+
+### Feedback and Comments
+
+The project is generally well-structured. All files are in well labeled folders. It is easy to figure out the use for each file/folder. 
+
+### Summary assessment
+
+* well structured
+
+
+## Documentation 
+How well is the project documented? Are you able to understand each step of the whole analysis, each decision that was made, and each line of code? Is enough information provided as comments in code or as part of Rmd files? 
+
+### Feedback and Comments
+
+The R scripts are well-documented with sufficient description. Each decision of analysis was justified and explained. The Rmd files(README) are well utilized. 
+
+### Summary assessment
+
+* fully and well documented
+
+## Reproducibility
+Are all results fully reproducible? Is documentation provided which clearly explains how to reproduce things, and does it work without the need for any manual intervention? Are you able to re-run the whole analysis without having to do manual interventions/edits?
+
+### Feedback and Comments
+
+I was able reproduce the results. Instructions were clear.
+
+
+### Summary assessment
+
+* small parts not reproducible or required manual intervention
+
+## Thoroughness
+How thorough was the overall study? Were alternatives (e.g. different ways of processing the data or different models) considered? Were alternatives discussed? Were the questions/hypotheses fully and thoroughly addressed?
+
+### Feedback and Comments
+
+The research questions have been fully addressed. All sections are relatively complete and thorough.
+
+### Summary assessment
+
+* strong level of thorougness
+
+## Further comments
+
+Overall, this study is in good shape. The authors may want to consider touching up code within some of the R scripts, however they do not take away from how well the project was done. 
