@@ -24,7 +24,12 @@ library(caret) # for cross-validation
 library(h2o) #For dimension reduction
 library(dplyr) 
 library(rsample)
-
+library(knitr)
+library(kableExtra)
+library(webshot)
+library(here)
+library(gt)
+library(gtsummary)
 ```
 
 I start with loading the same data set and performing the same functions to clean up the data by removing NAs. We will be looking at the variable P_UTDHPV, which reflects the up-to-date HPV vaccination status of the individual.
@@ -82,6 +87,36 @@ pca_model <- h2o.prcomp(
 # Viewing the result of the PCA
 print(pca_model)
 
+```
+
+```{r}
+# Extract the components from the PCA model
+standard_deviation <- pca_model@model$model_summary$pc1[1]
+proportion_variance <- pca_model@model$model_summary$pc1[2]
+cumulative_proportion <- pca_model@model$model_summary$pc1[3]
+
+# Create a data frame with the PC information
+scree_data <- data.frame(
+  Component = "PC1",
+  Standard.deviation = standard_deviation,
+  Variance = standard_deviation^2,
+  Proportion.Variance = proportion_variance,
+  Cumulative.Proportion = cumulative_proportion
+)
+
+# Print the summary table
+print(scree_data)
+
+# Create a table using kableExtra
+pca_table <- 
+  scree_data %>%
+  gt() %>%
+  tab_header(
+    title = "PCA Summary Table"
+  )
+
+# Save the table to a file
+gtsave(pca_table, here("results","tables", "pca_summary.png"))
 ```
 
 The PCA results showed one principle component with a high standard deviation and high proportion of variance, showing that the Pc1 captures a large portion (97.9%) of variability in the data. 
@@ -165,7 +200,54 @@ cv_metrics <- h2o.glm(x = predictor_columns,
 # Display results
 print(cv_metrics)
 
+# Function to extract metrics from a model
+extract_metrics <- function(model, dataset) {
+  metrics <- model@model$training_metrics@metrics
+  mse <- metrics$MSE
+  r2 <- metrics$r2
+  logloss <- metrics$logloss
+  mpce <- metrics$mean_per_class_error
+  auc <- metrics$AUC
+  gini <- metrics$Gini
+  nulldev <- metrics$null_deviance
+  resdev <- metrics$residual_deviance
+  aic <- metrics$AIC
+  
+  # Create a data frame for metrics
+  metrics_df <- data.frame(
+    Metric = c("MSE", "R^2", "Log Loss", "Mean Per-Class Error", "AUC", "Gini", "Null Deviance", "Residual Deviance", "AIC"),
+    Value = c(mse, r2, logloss, mpce, auc, gini, nulldev, resdev, aic),
+    Dataset = dataset
+  )
+  
+  return(metrics_df)
+}
+
+# Extract metrics from the LASSO model (training data)
+train_metrics_df <- extract_metrics(lasso_model, "Training")
+
+# Extract metrics from the CV metrics (test data)
+test_metrics_df <- extract_metrics(cv_metrics, "Test")
+
+# Combine the training and test metrics data frames
+combined_metrics_df <- rbind(train_metrics_df, test_metrics_df)
+
+# Create a gt table
+gt_table <- combined_metrics_df %>%
+  gt(
+    groupname_col = "Dataset", 
+    row_group_as_column = TRUE
+  ) %>%
+  tab_header(
+    title = md("Model Evaluation Metrics"),
+    subtitle = md("Comparison of Metrics between Test and Training Datasets")
+  ) 
+
+# Save the gt table
+gtsave(gt_table, here("results", "tables", "LASSO_metrics.png"))
+
 ```
+
 
 
 ### Conclusion

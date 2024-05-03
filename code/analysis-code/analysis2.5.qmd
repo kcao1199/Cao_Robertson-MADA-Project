@@ -245,7 +245,34 @@ Although the model is overfit, I will attempt to visualize the predictors chosen
 rf_vars <- rf_tune_fit %>%
   extract_fit_parsnip() %>% # use parsnip to extract to fit
   vip::vip() #use vip for visualizing the most important variables
-rf_vars
+
+# Modify the plot to set the color of the bars
+rf_vars_plot <- rf_vars+
+  aes(fill = "skyblue")+
+  labs(title = "Top Predictors")
+
+# Original variable names and their translations
+variable_translations <- data.frame(
+  Original_Variable = c("MOBIL_1", "SEX", "RENT_OWN", "INS_STAT2_I", "EDUC1", 
+                         "RACEETHK", "AGE", "FACILITY", "INCQ298A", "STATE"),
+  Translated_Variable = c("Geographic Mobility", "Sex", "Rental Status", 
+                          "Insurance Status", "Mother's Education Status", "Ethnicity", "Age", 
+                          "Facility", "Income", "State")
+)
+
+# Add translations to the plot
+rf_vars_plot_with_translations <- rf_vars_plot +
+  scale_fill_manual(values = c("skyblue")) +  # Set fill color manually
+  scale_x_discrete(labels = variable_translations$Translated_Variable) +  # Translate x-axis labels
+  labs(title = "Top Predictors",
+                x = "Variable")  # Add title and update x-axis label
+
+# Display the plot with translated variable names
+print(rf_vars_plot_with_translations)
+
+# Save the plot as a PNG file
+file_path = here("results", "figures", "variable_importance_plot.png")
+ggsave(filename = file_path, plot=rf_vars_plot_with_translations) 
 ```
 The most important variable, according to this model, is state, followed by income poverty ratio, then facility, then facility. Despite the importance above, it should be noted that the multicollinearity may affect the importance of the variables selected. This means that a model that regularizes the parameters could be ideal for finding the most important predictors.
 For this, we will try using the LASSO model.

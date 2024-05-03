@@ -23,6 +23,7 @@ library(rsample) # for cross validation
 library(yardstick) # for metrics
 library(mlbench)
 library(vip)
+library(gt)
 ```
 
 Now, we will load the preprocessed data.
@@ -285,7 +286,37 @@ lasso_vars <- lasso_tune_fit %>%
   extract_fit_parsnip() %>% # use parsnip to extract to fit
   vip::vip() #use vip for visualizing the most important variables
 
-print(lasso_vars)
+# Modify the plot to set the color of the bars
+lasso_vars_plot <- lasso_vars+
+  aes(fill = "skyblue")+
+  labs(title = "Top Predictors")
+
+# Create a data frame with original and translated variable names
+variable_translations <- data.frame(
+  Original_Variable = rev(c("STATE_RHODE.ISLAND", "FACILITY", 
+                        "STATE_VERMONT", "STATE_MISSISSIPPI", "STATE_NORTH.DAKOTA", "STATE_IOWA", 
+                        "STATE_HAWAII", "RENT_OWN_DON.T.KNOW", "STATE_NEBRASKA", 
+                        "INS_BREAK_I_CURRENTLY.UNINSURED.AND.NEVER.INSURED.SINCE.AGE.11")),
+  Translated_Variable = rev(c("Rhode Island", "All Std School Teen Clinics or Other Facilities", 
+                          "Vermont", "Mississippi", "North Dakota", "Iowa", "Hawaii", 
+                          "Rent/Own Status (Don't Know)", "Nebraska", 
+                          "Uninsured"))
+)
+
+# Add translations to the plot
+lasso_vars_plot_with_translations <- lasso_vars_plot +
+  scale_fill_manual(values = c("skyblue")) +  # Set fill color manually
+  scale_x_discrete(labels = variable_translations$Translated_Variable) +  # Translate x-axis labels
+  labs(title = "Top Predictors",
+                x = "Variable")+  # Add title and update x-axis label
+  scale_y_continuous(labels = function(x) strwrap(x, width = 10))
+
+# Display the plot with translated variable names
+print(lasso_vars_plot_with_translations)
+
+# Save the plot as a PNG file
+path = here("results", "figures", "top_lasso_predictors.png")
+ggsave(filename = path, plot=lasso_vars_plot_with_translations) 
 ```
 It seems that the most important factors for HPV vaccine completion are the state, facility and housing status. The states that have the highest predictive power of HPV vaccine completion are Rhode Island, Vermont, Mississippi, and North Dakota.
 ```{r}

@@ -71,6 +71,9 @@ residualPlotLogit <- function(model) {
 residual_plot_logit <- residualPlotLogit(fitall)
 print(residual_plot_logit)
 
+# Save the plot as an image
+file_path = here("results","figures", "residual_plot.png")
+ggsave(filename = file_path, plot = residual_plot_logit)
 ```
 The residual plot shows clear collinearity that is not represented by the current model. To find the predictors with multicollinearity, we will use a correlation matrix. This is because the VIF analysis will not run when multicollinearity is too high.
 ```{r}

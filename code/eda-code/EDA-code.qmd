@@ -52,8 +52,25 @@ Any income ratio \>1 indicates an income greater than the poverty level.
 Most of the observations were gathered from households with income ratios of 3, as shown by the skewed plot below.
 
 ```{r}
-p1 <- mydata %>% ggplot(aes(x=INCPORAR_I)) + geom_histogram() 
-plot(p1)
+p1 <- mydata %>% 
+  ggplot(aes(x = INCPORAR_I)) +  
+  geom_histogram(binwidth = 1, color = "black", fill = "skyblue") +  # Adjust binwidth as needed
+  xlab("Income to Poverty Ratio") +                  
+  ylab("Count") +                                    
+  ggtitle("Income-to-Poverty Ratio Variable Distribution") +
+  theme_minimal() +  # Apply a minimal theme for cleaner appearance
+  theme(
+    plot.title = element_text(size = 14, face = "bold"),  # Customize title font size and style
+    axis.title.x = element_text(size = 12),              # Customize x-axis label font size
+    axis.title.y = element_text(size = 12),              # Customize y-axis label font size
+    axis.text = element_text(size = 10),                 # Customize axis text font size
+    legend.position = "none",                            # Remove legend if not needed
+    panel.grid.major = element_line(color = "lightgray"), # Add light gray grid lines
+    panel.grid.minor = element_blank()                   # Remove minor grid lines
+  ) +
+  labs(caption = "(Originally INCPORAR_I)")
+
+p1
 figure_file = here("results", "figures", "income.png")
 ggsave(filename = figure_file, plot=p1) 
 ```
@@ -128,10 +145,17 @@ family_income_df <- as.data.frame(as.table(Family_Income_distribution))
 
 #plot with ggplot
 p5 <- ggplot(family_income_df, aes(x = Var1, y = Freq)) +
-  geom_bar(stat = "identity", fill = "skyblue") +
-  labs(title = "Family Income Distribution Percentage",
+  geom_bar(stat = "identity", fill = "skyblue", color = "black") +  # black borders
+  labs(title = "Household Income Variable Distribution",
        x = "Income",
-       y = "Percentage")
+       y = "Percentage (%)") +
+  theme_minimal() +  # Minimalistic theme
+  labs(caption = "(Originally INCQ298A)") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1),  # Rotate x-axis labels
+        axis.line = element_line(color = "black"),           # Black axes
+        panel.grid.major = element_blank(),                  # Remove major gridlines
+        panel.grid.minor = element_blank(),                  # Remove minor gridlines
+        panel.border = element_blank())                      # Remove panel borders
 
 #Viewing the plot to confirm it is done properly
 print(p5)
@@ -282,7 +306,7 @@ p13 <- ggplot(facility_df, aes(x = Var1, y = Freq)) +
   labs(title = "Facility Distribution Percentage",
        x = "Facility",
        y = "Percentage") +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5))
+  theme(axis.text.x = element_text(angle = 45, vjust = 0.5))
 
 #Viewing the plot to confirm it is done properly
 print(p13)
@@ -358,8 +382,8 @@ write.table(table1, file = here("results","tables", "state-vaccine-completion.tx
 #Stratifying the HPV vaccine completion by facility
 ##Make a stacked bar plot to compare which facilities reported UTD patients
 p18 <- ggplot(mydata, aes(x = P_UTDHPV, fill = FACILITY)) +
-  geom_bar(stat = "count") +  # Use geom_bar() with the count of each facility
-  labs(x = "Vaccination Status", y = "Count", title = "Facility Vaccination Completion") +
+  geom_bar(stat = "count") +  
+  labs(x = "Vaccination Status", y = "Count", caption = "UTD = Up-to-Date", title = "Facility Vaccination Completion") +
   theme_minimal()
   print(p18)
 
@@ -428,12 +452,23 @@ original_labels <- levels(mydata$INS_STAT2_I)
 print(original_labels)
 
 p17 <- mydata %>% 
-  ggplot(aes(x=INS_STAT2_I, y=INCPORAR_I, color = P_UTDHPV)) +  
+  ggplot(aes(x = INS_STAT2_I, y = INCPORAR_I, color = P_UTDHPV)) +  
   geom_boxplot() +
-  labs(x = "Insurance status", y = "Income-poverty ratio", title = "Income-poverty ratio stratified by insurance and vaccination") +
-  scale_x_discrete(labels = c("PRIVATE INSURANCE ONLY" = "Private", "ANY MEDICAID" = "Medicaid", "OTHER INSURANCE (CHIP, IHS, MILITARY, OR OTHER, ALONE OR IN COMB. WITH PRIVATE INSURANCE)" = "Other", "UNINSURED" = "Uninsured")) +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5))  # Rotate x-axis text by 90 degrees
-plot(p17)
+  labs(x = "Insurance status",
+       y = "Income-to-Poverty ratio",
+       title = "Income-to-Poverty Ratio Stratified by Insurance and Vaccination Status", 
+       color = "Vaccination Status", 
+       caption = "UTD refers to Up-to-Date vaccination status") +  
+  scale_x_discrete(
+    labels = c("PRIVATE INSURANCE ONLY" = "Private",
+               "ANY MEDICAID" = "Medicaid",
+               "OTHER INSURANCE (CHIP, IHS, MILITARY, OR OTHER, ALONE OR IN COMB. WITH PRIVATE INSURANCE)" = "Other",
+               "UNINSURED" = "Uninsured")) +
+  theme(axis.text.x = element_text(angle = 0, vjust = 0.5))  # Rotate x-axis text by 90 degrees
+
+print(p17)
+
+
 figure_file = here("results","figures", "insurance-income-stratified.png")
 ggsave(filename = figure_file, plot=p17) 
 
@@ -453,7 +488,13 @@ summary(model)
 ```{r}
 #Stratifying the HPV vaccine completion by both Race-Ethnicity and (choose either insurance or income-poverty status)
 p19 <- mydata %>% 
-  ggplot(aes(x=INCPORAR_I, y=RACEETHK, color = P_UTDHPV)) +  geom_boxplot()
+  ggplot(aes(x=INCPORAR_I, y=RACEETHK, color = P_UTDHPV)) +
+  geom_boxplot()+
+  labs(title = "HPV Vaccination Status",
+       x = "Income-to-Poverty Ratio",
+       y = "Race/Ethnicity", 
+       caption = "A ratio equal to 1, suggests income and poverty levels are the same.", 
+       color = "Vaccination Status")
 plot(p19)
 figure_file = here("results","figures", "raceeth-income-stratified.png")
 ggsave(filename = figure_file, plot=p19) 
