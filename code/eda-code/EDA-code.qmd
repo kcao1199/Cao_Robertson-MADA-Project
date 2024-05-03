@@ -21,6 +21,7 @@ library(dplyr)
 library(skimr)
 library(ggplot2)
 library(knitr)
+library(gtsummary)
 ```
 
 ```{r}
@@ -39,9 +40,59 @@ Any observations with NAs has been removed.
 summary_df = skimr::skim(mydata)
 print(summary_df)
 # save to file
+
 summarytable_file = here("results","tables", "summarytable.rds")
 saveRDS(summary_df, file = summarytable_file)
 ```
+I will create a table with gt summary to display in the manuscript.
+```{r}
+table1 <- mydata %>%
+  select(AGE, SEX, RACEETHK, INS_STAT2_I, INCPOV1, P_UTDHPV) %>% # select the variables to include in table
+  mutate(SEX = factor(SEX, # change the factor labels using dpylr
+                      levels = c("MALE", "FEMALE"),
+                      labels = c("Male", "Female")),
+         RACEETHK = factor(RACEETHK, 
+                           levels = c("NON-HISPANIC WHITE ONLY", 
+                                      "NON-HISPANIC BLACK ONLY", 
+                                      "NON-HISPANIC ASIAN ONLY",
+                                      "HISPANIC",
+                                      "NON-HISPANIC OTHER + MULTIPLE RACE"),
+                           labels = c("White", "Black", "Asian", "Hispanic", "Multiracial")),
+         INS_STAT2_I = factor(INS_STAT2_I,
+                              levels = c("PRIVATE INSURANCE ONLY", 
+                                         "ANY MEDICAID", 
+                                         "UNINSURED",
+                                         "OTHER INSURANCE (CHIP, IHS, MILITARY, OR OTHER, ALONE OR IN COMB. WITH PRIVATE INSURANCE)"),
+                              labels = c("Private", "Medicaid", "Uninsured", "Other insurance")),
+         INCPOV1 = factor(INCPOV1,
+                          levels = c("BELOW POVERTY", 
+                                     "ABOVE POVERTY > $75K", 
+                                     "ABOVE POVERTY <= $75K", 
+                                     "UNKNOWN"),
+                          labels = c("Below Poverty", "Above Poverty > $75K", "Above poverty <= $75K", "Unknown")),
+         P_UTDHPV = factor(P_UTDHPV,
+                           levels = c("UTD", "NOT UTD"),
+                           labels = c("Up-to-date", "Not Up-to-date")))%>%
+  tbl_summary(by = P_UTDHPV, # group by HPV vaccination status
+      statistic = list( 
+      all_continuous() ~ "{mean} ({sd})", # select the mean and standard deviation of continuous variables
+      all_categorical() ~ "{n} ({p}%)"),# select the number and percentage of categorical variables
+    label = list(
+      AGE ~ "Age (years)", # change the names of the variables to be more readable
+      SEX ~ "Sex",   
+      RACEETHK ~ "Ethnicity", 
+      INS_STAT2_I ~ "Insurance Status",      
+      INCPOV1 ~ "Poverty Status"), missing = "no") %>%
+    bold_labels() %>%
+  modify_caption("Table 1. Study sample of Teenagers aged 13-17 who received the NIS Teen survey in the U.S.")
+
+table1
+
+# Save the summary table
+saveRDS(table1, file = here("results/tables/summary_table.rds"))
+```
+
+
 
 ## Addressing Numerical Data Set
 

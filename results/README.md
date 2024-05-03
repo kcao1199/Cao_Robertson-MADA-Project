@@ -1,8 +1,6 @@
-This folder contains results produced by the code, such as figures and tables, and other files.
+# Results Folder
+This folder contains the results produced by Rachel and Kelly's processing, exploratory analysis, and final analysis.
 
-A special folder for large files exists. This folder is set in .gitignore to be ignored when pushing/pulling. This allows large files to be part of the project. If you want to collaborate with someone or work on multiple computers, you need to manually share/transfer everything in this folder, e.g. by Dropbox/OneDrive/etc.
+The sub-folder 'figures' contains plots and graphs produced from exploratory analysis and data analysis. Each is labelled to indicate their purpose.
 
-If you have a Dropbox/OneDrive/etc. link, add that link here:
-`LINK-GOES-HERE`.
-
-Structure the folders inside `results` such that they make sense for your specific analysis. Provide enough documentation that someone can understand what you are doing and what goes where. `readme.md` files inside each folder are a good idea.
+The sub-folder 'tables' contains summary tables and analysis output tables from data exploration and analysis. Each file is labelled according to its purpose.

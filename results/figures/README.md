@@ -1,3 +1,1 @@
-Folder for all figures.
-
-You can create further sub-folders if that makes sense.
+This folder contains all of the figures produced from the exploratory analysis and data analysis in the project. The labels indicate the purpose of each figure. Some figures are referenced in the manuscript and the rest are organized in the supplimentary materials document.

@@ -1,3 +1,1 @@
-Folder for all tables (generally stored as Rds files)
-
-You can create further sub-folders if that makes sense.
+This folder contains files from the lasso analysis and principal component analysis, four summary tables from the original data frame, and two exploratory tables showing the output of linear regressions plotting two variables, as indicated by the labels.

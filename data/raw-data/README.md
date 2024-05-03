@@ -1,4 +1,5 @@
-This folder contains the original data (DAT file) downloaded from the NIS Teen Vax website and the CSV written from the original data.
+# Raw Data Folder
+This folder contains the original data (DAT file) downloaded from the NIS Teen Vax website and the CSV written from the original data. It also contains the codebook, entitled 'NIS-TEEN-PUF22-CODEBOOK.pdf'.
 
 The data contains the variables described below:
 

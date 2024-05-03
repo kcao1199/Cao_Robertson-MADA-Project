@@ -1,3 +1,4 @@
+# Code Folder
 This folder contains the R and Quarto files containing all of the original code.
 
 The 'analysis-code' folder contains all of the code used for the data analysis, model fitting, and model testing. 

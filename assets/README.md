@@ -1,5 +1,6 @@
 # Assets
+This folder contains sub-folders for the assets that we obtained that were not directly produced through the code in this repository.
 
-This folder does not contain any static content as of yet, but it will contain any external images, schematics, 'csl' files, 'bib' files, or pdf files of references that might be used.
+The 'refs' folder contains a 'bib' file of our references as well as a 'csl' font to specify apa citation format
 
-The 'refs' folder will contain a 'bib' file of our references as well as the pdf version of these references.
+The 'tables' folder includes any tables externally produced and included in our manuscript.

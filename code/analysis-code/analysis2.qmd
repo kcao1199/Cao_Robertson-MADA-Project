@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 ---
 title: "Data Analysis and Modelling of Teen Vaccination Surveys"
 date: '`r format(Sys.Date())`'
@@ -256,4 +257,264 @@ gtsave(gt_table, here("results", "tables", "LASSO_metrics.png"))
 
 
 ### Conclusion
+=======
+---
+title: "Data Analysis and Modelling of Teen Vaccination Surveys"
+date: '`r format(Sys.Date())`'
+Author: Kelly Cao and Rachel Robertson
+output: html_document
+editor: 
+  markdown: 
+    wrap: sentence
+  
+---
+### Introduction
+The previous analysis performed shown on analysis1.qmd found in the same directory, showed collinearity among many of the predictor variables. The following script is an attempt to reduce that issue to prevent problem when performing analyses further downstream. 
+
+```{r setup, include=FALSE} 
+knitr::opts_chunk$set(warning = FALSE, message = FALSE) 
+```
+
+
+#### Loading library and data set
+``` {R, warnings=FALSE, messages=FALSE}
+# Load required libraries
+library(MASS) # for robust regression
+library(caret) # for cross-validation
+library(h2o) #For dimension reduction
+library(dplyr) 
+library(rsample)
+library(knitr)
+library(kableExtra)
+library(webshot)
+library(here)
+library(gt)
+library(gtsummary)
+```
+
+I start with loading the same data set and performing the same functions to clean up the data by removing NAs. We will be looking at the variable P_UTDHPV, which reflects the up-to-date HPV vaccination status of the individual.
+```{R}
+# Load and preprocess data
+data_location <- here::here("data","processed-data","cleandata1.rds")
+mydata <- readRDS(data_location)
+
+# Remove rows with missing values for the response variable
+mydata <- mydata[complete.cases(mydata$P_UTDHPV), ]
+
+# Set Seed for reproducibility
+rngseed = 1234
+set.seed(rngseed)
+
+# Create training data by alloting 3/4 of the data for training
+data_split <- initial_split(mydata, prop = 3/4)
+
+# Create data frames for the two sets:
+train_data <- training(data_split)
+test_data  <- testing(data_split)
+
+```
+
+
+### PCA Analysis
+I then initialize the h2o cluster and converted my data object to a H2oFrame or an h2o object. I then performed PCA using the function `h20.prcomp` and using the newly converted h20 object as a training frame. 
+
+This is perform in attempt t oindirectly reduce the collinearity in the predictor variables.
+
+The following lines are based on the resource shown below:
+
+[Link](https://bradleyboehmke.github.io/HOML/pca.html)
+
+>PCA indirectly addresses multicollinearity by transforming the original features into a new set of orthogonal variables, whereas LASSO/Ridge regression directly addresses multicollinearity by penalizing the coefficients of correlated predictors.
+
+```{R}
+# Initialize and connect to the H2O cluster
+# Start an H2O cluster
+h2o.init()
+
+# Convert train_data to H2OFrame
+mydata_h2o <- as.h2o(train_data)
+
+# Perform PCA using h2o.prcomp
+pca_model <- h2o.prcomp(
+  training_frame = mydata_h2o, 
+  x = c("AGE", "SEX", "STATE", 
+        "INS_STAT2_I", "INCQ298A", 
+        "INS_BREAK_I", "INCPOV1", 
+        "RACEETHK", "EDUC1", 
+        "LANGUAGE", "MOBIL_1", 
+        "RENT_OWN", "FACILITY"))
+
+# Viewing the result of the PCA
+print(pca_model)
+
+```
+
+```{r}
+# Extract the components from the PCA model
+standard_deviation <- pca_model@model$model_summary$pc1[1]
+proportion_variance <- pca_model@model$model_summary$pc1[2]
+cumulative_proportion <- pca_model@model$model_summary$pc1[3]
+
+# Create a data frame with the PC information
+scree_data <- data.frame(
+  Component = "PC1",
+  Standard.deviation = standard_deviation,
+  Variance = standard_deviation^2,
+  Proportion.Variance = proportion_variance,
+  Cumulative.Proportion = cumulative_proportion
+)
+
+# Print the summary table
+print(scree_data)
+
+# Create a table using kableExtra
+pca_table <- 
+  scree_data %>%
+  gt() %>%
+  tab_header(
+    title = "PCA Summary Table"
+  )
+
+# Save the table to a file
+gtsave(pca_table, here("results","tables", "pca_summary.png"))
+```
+
+The PCA results showed one principle component with a high standard deviation and high proportion of variance, showing that the Pc1 captures a large portion (97.9%) of variability in the data. 
+
+The result of having only one principle component further supports the fact that many of the predictor variables are highly collinear. One PC shows that a PCA must reduce the data object to a single dimension. Having a single principal component could be problematic for my analysis, particularly if it leads to the loss of crucial information or structure in my data due to collinearity among the original features. 
+
+Understanding why this occurs and assessing whether it aligns with my expectations and the characteristics of my dataset is essential. I may need to potentially review my data preprocessing methods or explore different feature selection techniques. 
+
+### LASSO Regression
+I first investigate alternative approaches to address collinearity, such as employing regularization methods like LASSO regression. This would ensure that I'm effectively capturing the underlying patterns in my data while mitigating the challenges posed by collinearity.
+
+```{R}
+# Use LASSO regression for variable selection and regularization
+lasso_model <- h2o.glm(
+  x = c("AGE", "SEX", "STATE",
+        "INS_STAT2_I", "INCQ298A"
+        , "INS_BREAK_I", "INCPOV1",
+        "RACEETHK", "EDUC1",
+        "LANGUAGE", "MOBIL_1",
+        "RENT_OWN", "FACILITY"),
+  y = "P_UTDHPV", training_frame = mydata_h2o, family = "binomial", alpha = 1)
+
+# View Lasso Model
+print(lasso_model)
+
+```
+
+The model used Lasso to pick out 97 important predictors from 105, which likely dealt with issues of collinearity among the original features. This simplification helped in making the model easier to understand and potentially improved its performance.
+
+
+### Attempt at Cross-validation
+I then utilized ChatGPT to write me a code to perform a cross-validation test.
+
+```{R}
+# Create a fold column for cross-validation
+fold_column <- h2o.kfold_column(data = mydata_h2o, nfolds = 10, seed = 1)  # Specify the number of folds and a seed for reproducibility
+
+# Add the fold column to the H2OFrame
+mydata_h2o <- h2o.cbind(mydata_h2o, fold_column)
+
+# Specify predictor variables
+predictor_columns <- c("AGE", "SEX", "STATE", "INS_STAT2_I", "INCQ298A", "INS_BREAK_I", 
+                       "INCPOV1", "RACEETHK", "EDUC1", "LANGUAGE", "MOBIL_1", "RENT_OWN", "FACILITY")
+
+# Evaluate model performance using cross-validation
+cv_metrics <- h2o.glm(x = predictor_columns, 
+                      y = "P_UTDHPV", 
+                      training_frame = mydata_h2o, 
+                      fold_column = "C1",  # Use the name of the fold column (default name is "C1")
+                      family = "binomial")
+
+# Display results
+print(cv_metrics)
+```
+
+The cross-validation results for the logistic regression model show consistent performance across folds, with an average accuracy of approximately 79.4%. The model demonstrates stability with metrics such as an area under the curve (AUC) around 0.644 and a mean per-class error of about 49.8%. Precision and recall metrics also exhibit robustness, averaging around 79.6% and 99.6%, respectively. These results indicate the model's ability to balance correctly identifying positive cases while minimizing false positives. However, areas for model refinement include residual deviance and specificity.
+
+```{r}
+# Replicating the previous analysis with test data 
+
+# Convert train_data to H2OFrame
+mydata_h2o <- as.h2o(test_data)
+
+# Create a fold column for cross-validation
+fold_column <- h2o.kfold_column(data = mydata_h2o, nfolds = 10, seed = 1)  # Specify the number of folds and a seed for reproducibility
+
+# Add the fold column to the H2OFrame
+mydata_h2o <- h2o.cbind(mydata_h2o, fold_column)
+
+# Specify predictor variables
+predictor_columns <- c("AGE", "SEX", "STATE", "INS_STAT2_I", "INCQ298A", "INS_BREAK_I", 
+                       "INCPOV1", "RACEETHK", "EDUC1", "LANGUAGE", "MOBIL_1", "RENT_OWN", "FACILITY")
+
+# Evaluate model performance using cross-validation
+cv_metrics <- h2o.glm(x = predictor_columns, 
+                      y = "P_UTDHPV", 
+                      training_frame = mydata_h2o, 
+                      fold_column = "C1",  # Use the name of the fold column (default name is "C1")
+                      family = "binomial")
+
+# Display results
+print(cv_metrics)
+
+# Function to extract metrics from a model
+extract_metrics <- function(model, dataset) {
+  metrics <- model@model$training_metrics@metrics
+  mse <- metrics$MSE
+  r2 <- metrics$r2
+  logloss <- metrics$logloss
+  mpce <- metrics$mean_per_class_error
+  auc <- metrics$AUC
+  gini <- metrics$Gini
+  nulldev <- metrics$null_deviance
+  resdev <- metrics$residual_deviance
+  aic <- metrics$AIC
+  
+  # Create a data frame for metrics
+  metrics_df <- data.frame(
+    Metric = c("MSE", "R^2", "Log Loss", "Mean Per-Class Error", "AUC", "Gini", "Null Deviance", "Residual Deviance", "AIC"),
+    Value = c(mse, r2, logloss, mpce, auc, gini, nulldev, resdev, aic),
+    Dataset = dataset
+  )
+  
+  return(metrics_df)
+}
+
+# Extract metrics from the LASSO model (training data)
+train_metrics_df <- extract_metrics(lasso_model, "Training")
+
+# Extract metrics from the CV metrics (test data)
+test_metrics_df <- extract_metrics(cv_metrics, "Test")
+
+# Combine the training and test metrics data frames
+combined_metrics_df <- rbind(train_metrics_df, test_metrics_df) %>%
+  filter(Metric %in% c("MSE", "R^2", "AUC"))
+
+
+# Create a gt table
+gt_table <- combined_metrics_df %>%
+  gt(
+    groupname_col = "Dataset", 
+    row_group_as_column = TRUE
+  ) %>%
+  tab_header(
+    title = md("Model Evaluation Metrics"),
+    subtitle = md("Comparison of Metrics between Test and Training Datasets")
+  )%>%
+  fmt_number(
+    decimals = 3  
+  )
+
+# Save the gt table
+gtsave(gt_table, here("results", "tables", "LASSO_metrics.png"))
+
+```
+
+
+
+### Conclusion
+>>>>>>> Stashed changes
 our analysis aimed to address collinearity issues in our teen vaccination surveys dataset through dimension reduction techniques like PCA and regularization methods such as LASSO regression. LASSO regression effectively selected important predictors while simplifying the model. Subsequent cross-validation demonstrated consistent model performance, with an average accuracy of 79.4% and robust precision and recall metrics. 

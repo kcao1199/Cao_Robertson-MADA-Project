@@ -1,101 +1,53 @@
 ---
-title: "Supplement to Example Manuscript Template for a Data Analysis Project"
+title: "Supplementary Material"
 
-subtitle: ""
-author: Andreas Handel
+author: rachel Robertson and Kelly Cao
 date: "`r Sys.Date()`"
 format:
-  pdf:
+  docx:
     toc: false
     number-sections: true
     highlight-style: github
-bibliography: ../../assets/dataanalysis_template_references.bib
-csl: ../../assets/vancouver.csl
 ---
-
-
 ```{r, echo=FALSE, message=FALSE}
-# load a few R packages
+# load packages
 library(here)
+library(dplyr)
 library(knitr)
+library(kableExtra)
+```
+The supplementary materials include tables and figures from the exploratory analysis and data analysis that were unused in the final manuscript.
+
+![S.1. Distribution of ethnicity and race in sample populaiton of U.S. teens.](../../../results/figures/ethnicity.distribution.png)
+
+![S.2. The distribution of facilities in which the survey was given to study sample of U.S. teens.](../../../results/figures/facility.distribution.png)
+![S.3. Distribution of income poverty ratio compared to HPV vaccination status (up-to-date or not up-to-date).](../../../results/figures/income-vaccination.png)
+
+![S.4. distribution of insurance status in study population of U.S. teenagers.](../../../results/figures/insurance.status.distribution.png)
+![S.5. The distribution of race/ ethnicity in U.S. teens in the study population, stratified by HPV vaccination status.](../../../results/figures/race-ethnicity-vaccination.png)
+![S.6. The distribution of race/ ethnicity in U.S. teens in the study population.](../../../results/figures/race.distribution.png)
+
+
+![S.7. The percentage of surveys submitted for each state in the U.S. study.](../../../results/figures/state_distribution.png)
+
+![S.8. The distribution of HPV vaccination status in the overall study population of U.S. teens.](../../../results/figures/vaccination.status.distribution.png)
+
+![S.9. The distribution of race/ ethnicity in U.S. teens in the study population, stratified by HPV vaccination status.](../../../results/figures/race-ethnicity-vaccination.png)
+
+```{r, warning= FALSE, message = FALSE, echo = FALSE}
+#read the table
+table1 <- here("results/tables/state-vaccine-completion.txt")
+S10 <- read.table(table1, header = TRUE)
+
+# Render the table using kable
+kable(S10, caption = "S.10. Percentage of up-to-date HPV vaccination status for each state from study sample.")
 ```
 
+```{r, warning= FALSE, message = FALSE, echo = FALSE}
+#read the table
+table2 <- here("results/tables/vaccine_percent_by_race.txt")
+S11 <- read.table(table2, header = TRUE)
 
-
-
-This shows some materials that could go into a supplementary file. Often you want/need references here too. You can use the same reference bib file for this and the main text (as done here) or have separate bib files.
-
-For illustrative purposes, I'm doing the supplement as pdf. For this to work, you need a (La)TeX system installed. It's easy. Just follow [these steps](https://quarto.org/docs/output-formats/pdf-basics.html).
-
-Of course you would choose the format based on needs.
-
-I'm also using a different style for the references here. (vancouver vs apa in the main manuscript). Usually one would have the formatting of the references the same in those two documents, but I want to illustrate how easy it is to switch reference formatting styles, you just need to get the right CSL file and specify it in the YAML header. We could also have a seperate reference bibtext (`.bib`) file, but here we are using the same.
-
-# Overview
-
-A quick overview of what readers can find in the supplement.
-
-
-# Code and file information
-
-Explain here what each code/file is and does, and in which order (if any) users need to run thing to reproduce everything.
-Essentially, give a full set of instructions to re-generate everything.
-
-
-{{< pagebreak >}}
-
-
-# Additional Method Details
-
-Often, the main manuscript only allows for an overview description of the methods. Use the supplement to describe all your methods, models and approaches in a lot of detail. Reference specific parts of your code as needed.
-
-{{< pagebreak >}}
-
-
-# Additional results
-
-Show additional results here. Those can be some useful exploratory/descriptive figures or tables, or results from additional analyses that didn't make it into the main text.
-
-
-## Example additional result
-
-
-@tbl-resulttable1 shows an additional table summarizing a model fit.
-
-```{r}
-#| label: tbl-resulttable1
-#| tbl-cap: "Another fit table."
-#| echo: FALSE
-resulttable1 = readRDS(here("results","resulttable1.rds"))
-knitr::kable(resulttable1)
+# Render the table using kable
+kable(S11, caption = "S.11. Percentage and Count of up-to-date HPV vaccination status according to racial and ethnic group.")
 ```
-
-
-
-@fig-result2 shows a scatterplot figure produced by one of the R scripts.
-
-
-```{r}
-#| label: fig-result2
-#| fig-cap: "Height and weight."
-#| echo: FALSE
-knitr::include_graphics(here("results","height_weight.png"))
-```
-
-
-{{< pagebreak >}}
-
-
-# Discussion
-
-Any additional discussion regarding the supplementary material/findings.
-
-These papers [@mckay2020; @mckay2020a] are good examples of papers published using a fully reproducible setup similar to the one shown in this template. 
-
-{{< pagebreak >}}
-
-
-# References
-
-
-
