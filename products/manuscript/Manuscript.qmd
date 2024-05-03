@@ -150,7 +150,7 @@ The result of having only one principle component further supports the fact that
 
 Using the same package, I used the LASSO logistical regression model and performed a co-validation test on it.  
 
-![Table 5. Summary of Initial LASSO Regression](../../results/tables/LASSO_metrics.png){height=500}
+![Table 5. Summary of Initial LASSO Regression](../../results/tables/LASSO_metrics.png)
 
 
 ### Random Forest Model 

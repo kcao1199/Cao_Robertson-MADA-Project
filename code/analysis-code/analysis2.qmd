@@ -230,7 +230,9 @@ train_metrics_df <- extract_metrics(lasso_model, "Training")
 test_metrics_df <- extract_metrics(cv_metrics, "Test")
 
 # Combine the training and test metrics data frames
-combined_metrics_df <- rbind(train_metrics_df, test_metrics_df)
+combined_metrics_df <- rbind(train_metrics_df, test_metrics_df) %>%
+  filter(Metric %in% c("MSE", "R^2", "AUC"))
+
 
 # Create a gt table
 gt_table <- combined_metrics_df %>%
@@ -241,7 +243,10 @@ gt_table <- combined_metrics_df %>%
   tab_header(
     title = md("Model Evaluation Metrics"),
     subtitle = md("Comparison of Metrics between Test and Training Datasets")
-  ) 
+  )%>%
+  fmt_number(
+    decimals = 3  
+  )
 
 # Save the gt table
 gtsave(gt_table, here("results", "tables", "LASSO_metrics.png"))
